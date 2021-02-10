@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<settings>
+    <DebugChecksum>
+        <Checksum>136231325</Checksum>
+    </DebugChecksum>
+    <TermIOLog>
+        <LoggingEnabled>_ 0</LoggingEnabled>
+        <LogFile>_ ""</LogFile>
+    </TermIOLog>
+    <Exceptions>
+        <StopOnUncaught>_ 0</StopOnUncaught>
+        <StopOnThrow>_ 0</StopOnThrow>
+    </Exceptions>
+    <CodeCoverage>
+        <Enabled>_ 0</Enabled>
+    </CodeCoverage>
+</settings>
