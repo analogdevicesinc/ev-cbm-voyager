@@ -27,6 +27,7 @@
 *.so
 *.so.*
 *.dylib
+*.pyc
 
 # Executables
 *.out
