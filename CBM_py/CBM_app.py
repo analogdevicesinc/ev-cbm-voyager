@@ -62,7 +62,7 @@ import sqlite3
 # ============================ data ============================================
 Vcc = 3.3  # Supply Voltage
 V_perg_ref = 0.04  # V per g at reference voltage
-Vref = 5  # 5V reference voltage
+Vref = 1.8  # 1.8V reference voltage
 ADC_res = 16  # No of bits resolution
 ADC_offset = 2 ** (ADC_res - 1)
 V_per_LSB = Vcc / 2 ** ADC_res  # V per LSB resolution
@@ -550,9 +550,12 @@ class Mote:
                 # Setting peak, p2p and scale values
                 for i, p in enumerate(self._peak):
                     local_peak = max(self._peaks[i])
+
                     if local_peak > p:
                         self._peak[i] = local_peak
-                    if local_peak > self.scale[i]: self.scale[i] = local_peak * 1.2
+
+                    if local_peak > self.scale[i]:
+                        self.scale[i] = local_peak * 1.2
 
                 for i, p2p in enumerate(self._p2p):
                     local_p2p = max(self._p2ps[i])
@@ -631,11 +634,18 @@ class Mote:
             ax = 'z'
             self.offset = self._z_offset
 
+        raw_avg = sum(raw)/len(raw)
+        #print("{} axis: Average Raw Value = {}".format(ax, raw_avg))
+        #print("{} axis: Average Raw Value - offset = {} (O={})".format(ax, raw_avg - self.offset, self.offset))
+            
         if withOffset:
-            raw = [ADC_gain * (x - ADC_offset) for x in raw]
-            self._offset_removed[ax] = True
+            #raw = [ADC_gain * (x - ADC_offset) for x in raw]
+            pass  # Just return raw codes
         else:
-            raw = [ADC_gain * (x - ADC_offset) - self.offset for x in raw]
+            raw = [(ADC_gain * (x - ADC_offset - self.offset)) for x in raw]
+
+        raw_avg = sum(raw)/len(raw)
+        #print("{} axis: Average G Value = {}".format(ax, raw_avg))
 
         fft = [2 * ADC_gain * x for x in fft]
 
@@ -647,12 +657,25 @@ class Mote:
             return
 
         raw_w_offset, fft, ax = self.latest_valid_data(withOffset=True)
-        if ax == 'x':
-            self._x_offset = sum(raw_w_offset) / len(raw_w_offset)
-        if ax == 'y':
-            self._y_offset = sum(raw_w_offset) / len(raw_w_offset)
-        if ax == 'z':
-            self._z_offset = sum(raw_w_offset) / len(raw_w_offset)
+        #print("Removing Offset from ", ax)
+
+        if ax == 'x' and self._offset_removed[ax] == False:
+            self._x_avg0G  = sum(raw_w_offset) / len(raw_w_offset)
+            self._x_offset = self._x_avg0G - ADC_offset
+            self._offset_removed[ax] = True
+            print("Removing {} from X axis codes".format(self._x_offset))
+
+        if ax == 'y' and self._offset_removed[ax] == False:
+            self._y_avg0G  = sum(raw_w_offset) / len(raw_w_offset)
+            self._y_offset = self._y_avg0G - ADC_offset
+            self._offset_removed[ax] = True
+            print("Removing {} from Y axis codes".format(self._y_offset))
+        
+        if ax == 'z' and self._offset_removed['x'] and self._offset_removed['y']:
+            # Make sure x and y have been offset before Z
+            self._z_offset = (self._x_avg0G + self._y_avg0G)/2 - ADC_offset
+            self._offset_removed[ax] = True
+            print("Removing {} from Z axis codes".format(self._z_offset))
 
     ##############################  Functions for mote updates  #################################
     def update(self, num_samples):
@@ -1385,7 +1408,7 @@ def connection_frame_init(frame):
     disButton.bind("<Button-1>", mgr.disconnect)
 
     offsetCheck = ttk.Checkbutton(frame,
-                                  text="Remove ADC offset (only when static)",
+                                  text="Remove ADC offset (only perform when mote is stationary and upright (assumes G in Z-axis=1))",
                                   command=update_offsets)
     offsetCheck.pack(side='left', padx=10, pady=10)
 
