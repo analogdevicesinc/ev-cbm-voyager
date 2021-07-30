@@ -26,6 +26,7 @@ License Agreement.
 #include <assert.h>
 #include <stdio.h>
 #include <arm_math.h>
+#include <stdlib.h>  // For dynamic memory management
 
 /* ADC example include */
 #include "ADC_channel_read.h"
@@ -46,14 +47,22 @@ static uint8_t DeviceMemory[ADI_ADC_MEMORY_SIZE];
 
 /* Allocating space for ADC raw and fft buffers */
 ADI_ALIGNED_PRAGMA(4)
-uint16_t adcDataX[ADC_DATA_LEN];
-uint16_t adcDataY[ADC_DATA_LEN];
-uint16_t adcDataZ[ADC_DATA_LEN];
+uint16_t adcDataX[ADC_ARR_LEN_S];
+uint16_t adcDataY[ADC_ARR_LEN_S];
+uint16_t adcDataZ[ADC_ARR_LEN_S];
 
 arm_rfft_fast_instance_f32 fftInst;
-float fftInBuf[ADC_NUM_SAMPLES];
-float fftOutBuf[ADC_NUM_SAMPLES << 1];
-float fftMagOutBuf[ADC_NUM_SAMPLES >> 1];
+float fftInBuf[ADC_SAMPLES_PER_BUFF];         
+float fftOutBuf[ADC_SAMPLES_PER_BUFF << 1];   
+float fftMagOutBuf[ADC_SAMPLES_PER_BUFF >> 1];
+
+uint32_t ADC_NUM_SAMPLES; //bytes required for raw adc data
+uint32_t ADC_FFT_IDX;  
+/* Define total length of 1 adc_buffer, and size of bytes used*/
+uint16_t ADC_DATA_SIZE;
+
+uint32_t ADC_DATA_LEN;
+float ADC_FFT_SCALER;
 
 /*Battery Voltage*/
 uint32_t *pVbat;
@@ -102,9 +111,39 @@ void ADC_Init(void)
         eResult = adi_adc_IsCalibrationDone (hDevice, &bCalibrationDone);
         DEBUG_RESULT("Failed to get the calibration status", eResult, ADI_ADC_SUCCESS);
     }
+}
 
-    if (arm_rfft_fast_init_f32(&fftInst, ADC_NUM_SAMPLES) != ARM_MATH_SUCCESS)
-        while (1);
+// Update the parameters that are dependent on the number of ADC samples to be captured
+void updateAdcParams(uint32_t numSamples, bool ext_flash_needed)
+{
+   if (ext_flash_needed) 
+   {
+       // Ext flash needed... FFT can't be performed
+       if (numSamples > ADC_SAMPLES_PER_BUFF)
+           ADC_NUM_SAMPLES = ADC_SAMPLES_PER_BUFF;
+       else
+           ADC_NUM_SAMPLES = numSamples;
+       //ADC_DATA_LEN    = ADC_NUM_SAMPLES;
+       //ADC_DATA_SIZE   = (sizeof(uint16_t)*ADC_DATA_LEN) + ADC_PARAM_LEN;
+       ADC_DATA_LEN  = ADC_NUM_SAMPLES + ADC_PARAM_LEN;
+       ADC_DATA_SIZE = (sizeof(uint16_t)*ADC_DATA_LEN);
+   }
+   else
+   {
+       ADC_NUM_SAMPLES = numSamples;
+       //ADC_FFT_IDX     = numSamples + ADC_PARAM_LEN_S; // NOTE: Changed ADC_PARAM_LEN_S
+       ADC_FFT_IDX     = numSamples + ADC_PARAM_LEN - 1u; // NOTE: Changed ADC_PARAM_LEN_S
+       ADC_FFT_SCALER  = ((float) (1.0/numSamples));
+       //ADC_DATA_LEN    = numSamples + (numSamples >> 1);
+       //ADC_DATA_SIZE   = (sizeof(uint16_t)*ADC_DATA_LEN) + ADC_PARAM_LEN;
+       ADC_DATA_LEN    = numSamples + (numSamples >> 1) + ADC_PARAM_LEN;
+       ADC_DATA_SIZE   = (sizeof(uint16_t)*ADC_DATA_LEN);
+    
+       // NOTE: ADC_PARAM_LEN already referred to bytes so it should not be passed to the sizeof function
+    
+       if (arm_rfft_fast_init_f32(&fftInst, ADC_NUM_SAMPLES) != ARM_MATH_SUCCESS)
+           while (1);
+   }
 }
 
 
@@ -149,11 +188,13 @@ void ADC_SampleData_Blocking_Oversampling(uint8_t extra_bits, uint8_t samp_time)
 }
 
 
-void ADC_Calc_FFT(uint16_t adc_num_samples)
+void ADC_Calc_FFT()
 {
     //X_AXIS      
+    // NOTE: ADC_PARAM_LEN was 2, which would have been referring to the 3rd sample but header only takes up 1 sample slot (2B)
     for (int i = 0; i < ADC_NUM_SAMPLES; i++)
-        fftInBuf[i] = (float)adcDataX[i + ADC_PARAM_LEN];
+        //fftInBuf[i] = (float)adcDataX[i + ADC_PARAM_LEN_S]; 
+        fftInBuf[i] = (float)adcDataX[i + ADC_PARAM_LEN]; 
 
     arm_rfft_fast_f32(&fftInst, fftInBuf, fftOutBuf, 0);
     arm_cmplx_mag_f32(fftOutBuf, fftMagOutBuf, ADC_NUM_SAMPLES >> 1);
@@ -171,6 +212,7 @@ void ADC_Calc_FFT(uint16_t adc_num_samples)
 #ifndef OLD_MOTE
     //Y_AXIS
     for (int i = 0; i < ADC_NUM_SAMPLES; i++)
+        //fftInBuf[i] = adcDataY[i + ADC_PARAM_LEN_S];
         fftInBuf[i] = adcDataY[i + ADC_PARAM_LEN];
 
     arm_rfft_fast_f32(&fftInst, fftInBuf, fftOutBuf, 0);
@@ -181,6 +223,7 @@ void ADC_Calc_FFT(uint16_t adc_num_samples)
 
     //Z_AXIS
     for (int i = 0; i < ADC_NUM_SAMPLES; i++)
+        //fftInBuf[i] = adcDataZ[i + ADC_PARAM_LEN_S];
         fftInBuf[i] = adcDataZ[i + ADC_PARAM_LEN];
 
     arm_rfft_fast_f32(&fftInst, fftInBuf, fftOutBuf, 0);

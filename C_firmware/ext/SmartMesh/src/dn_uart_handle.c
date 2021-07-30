@@ -198,6 +198,14 @@ void dn_uart_init(dn_uart_rxByte_cbt rxByte_cb)
    full = false;
         
    /*Register for call back and call back buffer submission*/
+   dn_uart_irq_enable();
+
+   adi_uart_RegisterCallback(hDevice, SmartMesh_RF_cog_receive_ISR, NULL);      /* Registering call back */
+   adi_uart_SubmitRxBuffer(hDevice, Rx_buff, Rx_buffer_size, DMA_mode);  
+}        
+
+void dn_uart_irq_enable(void) 
+{
 #ifdef COG
    /*COG board Hardware*/
    *pREG_UART0_IEN = Rx_Buffer_Full;                                            /* enabling receive buffer full interrupt */
@@ -207,9 +215,18 @@ void dn_uart_init(dn_uart_rxByte_cbt rxByte_cb)
    *pREG_UART1_IEN = Rx_Buffer_Full;                                            /* enabling receive buffer full interrupt */
    Rx_buff=(uint8_t*)pREG_UART1_RX;
 #endif
-   adi_uart_RegisterCallback(hDevice, SmartMesh_RF_cog_receive_ISR, NULL);      /* Registering call back */
-   adi_uart_SubmitRxBuffer(hDevice, Rx_buff, Rx_buffer_size, DMA_mode);  
-}        
+}
+
+void dn_uart_irq_disable(void) 
+{
+#ifdef COG
+   /*COG board Hardware*/
+   *pREG_UART0_IEN = *pREG_UART0_IEN & ~Rx_Buffer_Full;            /* disabling receive buffer full interrupt */
+#else
+   /*CMG MVP Hardware*/
+   *pREG_UART1_IEN = *pREG_UART1_IEN & ~Rx_Buffer_Full;            /* disabling receive buffer full interrupt */
+#endif
+}
 
 /*=========================== Transmission ========================================*/
 

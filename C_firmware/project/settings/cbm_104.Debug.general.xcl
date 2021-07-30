@@ -2,11 +2,11 @@
 
 "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0 EWARM FS 8.22.3\arm\bin\armjlink2.dll" 
 
-"C:\GitRepos\GitHub CBM\ev-cbm-voyager\C_firmware\project\Debug\Exe\cbm_104.out" 
+"C:\Users\jmccarth\OneDrive - Analog Devices, Inc\CBM\github_public\ev-cbm-voyager\C_firmware\project\Debug\Exe\cbm_104.out" 
 
 --plugin "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0 EWARM FS 8.22.3\arm\bin\armbat.dll" 
 
---flash_loader "C:\Users\TSharke2\AppData\Local\IAR Embedded Workbench\PackRepo\AnalogDevices\ADuCM4x50_DFP\3.3.0\ARM\config\flashloader\AnalogDevices\FlashADuCM4050.board" 
+--flash_loader "C:\Users\jmccarth\AppData\Local\IAR Embedded Workbench\PackRepo\AnalogDevices\ADuCM4x50_DFP\3.4.0\ARM\config\flashloader\AnalogDevices\FlashADuCM4050.board" 
 
 
 

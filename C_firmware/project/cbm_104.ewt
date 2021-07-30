@@ -2370,6 +2370,162 @@
         </settings>
     </configuration>
     <group>
+        <name>CMSIS-Pack</name>
+        <file>
+            <name>$PROJ_DIR$\RTE\RTE_Components.h</name>
+        </file>
+        <group>
+            <name>Device Startup</name>
+            <file>
+                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\startup_ADuCM4050.s</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\system_ADuCM4050.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\system_ADuCM4050.h</name>
+            </file>
+        </group>
+        <group>
+            <name>Device Silicon Revision</name>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\adi_si_rev.h</name>
+            </file>
+        </group>
+        <group>
+            <name>Device Global Configuration</name>
+            <file>
+                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_cycle_counting_config.h</name>
+            </file>
+        </group>
+        <group>
+            <name>Device Examples Support</name>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\common.c</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\common.h</name>
+            </file>
+        </group>
+        <group>
+            <name>Device Drivers</name>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\adc\adi_adc.c</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\adc\adi_adc.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_adc_config.h</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\dma\adi_dma.c</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\dma\adi_dma.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_global_config.h</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\gpio\adi_gpio.c</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\gpio\adi_gpio.h</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\pwr\adi_pwr.c</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\pwr\adi_pwr.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_pwr_config.h</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\rtc\adi_rtc.c</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\rtc\adi_rtc.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_rtc_config.h</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\spi\adi_spi.c</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\spi\adi_spi.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_spi_config.h</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\tmr\adi_tmr.c</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\tmr\adi_tmr.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_tmr_config.h</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\uart\adi_uart.c</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\uart\adi_uart.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_uart_config.h</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\wdt\adi_wdt.c</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\wdt\adi_wdt.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_wdt_config.h</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___a_d_c___driver.html</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___d_m_a___driver.html</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___g_p_i_o___driver.html</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___power___driver.html</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___r_t_c___driver.html</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___s_p_i___driver.html</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___t_m_r___driver.html</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___u_a_r_t___driver.html</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___w_d_t___driver.html</name>
+            </file>
+        </group>
+        <group>
+            <name>CMSIS CORE</name>
+            <file>
+                <name>${CMSIS_PACK_PATH_ARM#CMSIS#5.7.0}$\CMSIS\Documentation\Core\html\index.html</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_ARM#CMSIS#5.7.0}$\CMSIS\Core\Include\tz_context.h</name>
+            </file>
+        </group>
+    </group>
+    <group>
         <name>SmartMesh</name>
         <file>
             <name>$PROJ_DIR$\..\ext\SmartMesh\src\dn_endianness.c</name>
@@ -2400,10 +2556,16 @@
         <name>$PROJ_DIR$\..\src\ADC_channel_read.c</name>
     </file>
     <file>
+        <name>$PROJ_DIR$\..\src\ext_flash.c</name>
+    </file>
+    <file>
         <name>$PROJ_DIR$\..\src\main_prog.c</name>
     </file>
     <file>
         <name>$PROJ_DIR$\..\src\scheduler.c</name>
+    </file>
+    <file>
+        <name>$PROJ_DIR$\..\src\shutdown.c</name>
     </file>
     <file>
         <name>$PROJ_DIR$\..\src\SmartMesh_RF_cog.c</name>
@@ -2414,148 +2576,4 @@
     <file>
         <name>$PROJ_DIR$\..\src\SPI1_AD7685.c</name>
     </file>
-    <group>
-        <name>CMSIS-Pack</name>
-        <group>
-            <name>CMSIS CORE</name>
-            <file>
-                <name>${CMSIS_PACK_PATH_ARM#CMSIS#5.7.0}$\CMSIS\Documentation\Core\html\index.html</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_ARM#CMSIS#5.7.0}$\CMSIS\Core\Include\tz_context.h</name>
-            </file>
-        </group>
-        <group>
-            <name>Device Drivers</name>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\adc\adi_adc.c</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\adc\adi_adc.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_adc_config.h</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\dma\adi_dma.c</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\dma\adi_dma.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_global_config.h</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\gpio\adi_gpio.c</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\gpio\adi_gpio.h</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\pwr\adi_pwr.c</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\pwr\adi_pwr.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_pwr_config.h</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\spi\adi_spi.c</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\spi\adi_spi.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_spi_config.h</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\tmr\adi_tmr.c</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\tmr\adi_tmr.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_tmr_config.h</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\uart\adi_uart.c</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\uart\adi_uart.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_uart_config.h</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\wdt\adi_wdt.c</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\wdt\adi_wdt.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_wdt_config.h</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___a_d_c___driver.html</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___d_m_a___driver.html</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___g_p_i_o___driver.html</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___power___driver.html</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___s_p_i___driver.html</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___t_m_r___driver.html</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___u_a_r_t___driver.html</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___w_d_t___driver.html</name>
-            </file>
-        </group>
-        <group>
-            <name>Device Examples Support</name>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\common.c</name>
-            </file>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\common.h</name>
-            </file>
-        </group>
-        <group>
-            <name>Device Global Configuration</name>
-            <file>
-                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_cycle_counting_config.h</name>
-            </file>
-        </group>
-        <group>
-            <name>Device Silicon Revision</name>
-            <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\adi_si_rev.h</name>
-            </file>
-        </group>
-        <group>
-            <name>Device Startup</name>
-            <file>
-                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\startup_ADuCM4050.s</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\system_ADuCM4050.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\system_ADuCM4050.h</name>
-            </file>
-        </group>
-        <file>
-            <name>$PROJ_DIR$\RTE\RTE_Components.h</name>
-        </file>
-    </group>
 </project>

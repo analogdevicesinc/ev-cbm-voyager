@@ -55,6 +55,13 @@
 #define SPI1_MISO_PORTP1_MUX  ((uint32_t) ((uint32_t) 1<<16))
 /* added end */
 
+#define SPI2_CLK_PORTP1_MUX  ((uint16_t) ((uint16_t) 1<<4))
+#define SPI2_MOSI_PORTP1_MUX  ((uint16_t) ((uint16_t) 1<<6))
+#define SPI2_MISO_PORTP1_MUX  ((uint16_t) ((uint16_t) 1<<8))
+#define SPI2_CS0_PORTP1_MUX   ((uint16_t) ((uint16_t) 1<<10))
+
+
+#define SYSCLK_PORT2_MUX ((uint32_t) ((uint32_t) 1 << 11))
 
 int32_t adi_initpinmux(void);
 
@@ -83,6 +90,13 @@ int32_t adi_initpinmux(void) {
     *pREG_GPIO1_CFG |= SPI1_SCLK_PORTP1_MUX | SPI1_MOSI_PORTP1_MUX | SPI1_MISO_PORTP1_MUX;
 /* added end */
 
+      // Setup SPI2 (For external flash communication)
+    *pREG_GPIO1_CFG |= SPI2_CLK_PORTP1_MUX | SPI2_MOSI_PORTP1_MUX | SPI2_MISO_PORTP1_MUX | SPI2_CS0_PORTP1_MUX;
+    
+    /* SWV (SWO) Setup */
+    *pREG_GPIO1_CFG |= 3u << 18;  // Set Pin 9 to 0x3
+     /* Enable  SWO as output */
+        
     return 0;
 }
 

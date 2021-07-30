@@ -78,7 +78,7 @@
                 </option>
                 <option>
                     <name>OGChipSelectEditMenu</name>
-                    <state>Default	None</state>
+                    <state>ADuCM4050	AnalogDevices ADuCM4050</state>
                 </option>
                 <option>
                     <name>GenLowLevelInterface</name>
@@ -90,7 +90,7 @@
                 </option>
                 <option>
                     <name>OGBufferedTerminalOutput</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>GenStdoutInterface</name>
@@ -138,7 +138,7 @@
                 </option>
                 <option>
                     <name>GFPUDeviceSlave</name>
-                    <state>Default	None</state>
+                    <state>ADuCM4050	AnalogDevices ADuCM4050</state>
                 </option>
                 <option>
                     <name>FPU2</name>
@@ -360,7 +360,7 @@
                 </option>
                 <option>
                     <name>CCOptLevel</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>CCOptStrategy</name>
@@ -369,7 +369,7 @@
                 </option>
                 <option>
                     <name>CCOptLevelSlave</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>CompilerMisraRules98</name>
@@ -2089,10 +2089,16 @@
         <name>$PROJ_DIR$\..\src\ADC_channel_read.c</name>
     </file>
     <file>
+        <name>$PROJ_DIR$\..\src\ext_flash.c</name>
+    </file>
+    <file>
         <name>$PROJ_DIR$\..\src\main_prog.c</name>
     </file>
     <file>
         <name>$PROJ_DIR$\..\src\scheduler.c</name>
+    </file>
+    <file>
+        <name>$PROJ_DIR$\..\src\shutdown.c</name>
     </file>
     <file>
         <name>$PROJ_DIR$\..\src\SmartMesh_RF_cog.c</name>
@@ -2106,6 +2112,9 @@
     <group>
         <name>CMSIS-Pack</name>
         <tag>CMSISPack.ComponentGroup</tag>
+        <file>
+            <name>$PROJ_DIR$\RTE\RTE_Components.h</name>
+        </file>
         <group>
             <name>CMSIS CORE</name>
             <tag>CMSISPack.Component</tag>
@@ -2120,107 +2129,119 @@
             <name>Device Drivers</name>
             <tag>CMSISPack.Component</tag>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\adc\adi_adc.c</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\adc\adi_adc.c</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\adc\adi_adc.h</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\adc\adi_adc.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_adc_config.h</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\dma\adi_dma.c</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\dma\adi_dma.c</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\dma\adi_dma.h</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\dma\adi_dma.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_global_config.h</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\gpio\adi_gpio.c</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\gpio\adi_gpio.c</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\gpio\adi_gpio.h</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\gpio\adi_gpio.h</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\pwr\adi_pwr.c</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\pwr\adi_pwr.c</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\pwr\adi_pwr.h</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\pwr\adi_pwr.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_pwr_config.h</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\spi\adi_spi.c</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\rtc\adi_rtc.c</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\spi\adi_spi.h</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\rtc\adi_rtc.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_rtc_config.h</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\spi\adi_spi.c</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\spi\adi_spi.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_spi_config.h</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\tmr\adi_tmr.c</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\tmr\adi_tmr.c</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\tmr\adi_tmr.h</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\tmr\adi_tmr.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_tmr_config.h</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\uart\adi_uart.c</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\uart\adi_uart.c</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\uart\adi_uart.h</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\uart\adi_uart.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_uart_config.h</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\drivers\wdt\adi_wdt.c</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\drivers\wdt\adi_wdt.c</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\drivers\wdt\adi_wdt.h</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\drivers\wdt\adi_wdt.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\adi_wdt_config.h</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___a_d_c___driver.html</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___a_d_c___driver.html</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___d_m_a___driver.html</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___d_m_a___driver.html</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___g_p_i_o___driver.html</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___g_p_i_o___driver.html</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___power___driver.html</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___power___driver.html</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___s_p_i___driver.html</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___r_t_c___driver.html</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___t_m_r___driver.html</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___s_p_i___driver.html</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___u_a_r_t___driver.html</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___t_m_r___driver.html</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Documents\html\group___w_d_t___driver.html</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___u_a_r_t___driver.html</name>
+            </file>
+            <file>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Documents\html\group___w_d_t___driver.html</name>
             </file>
         </group>
         <group>
             <name>Device Examples Support</name>
             <tag>CMSISPack.Component</tag>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Source\common.c</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Source\common.c</name>
             </file>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\common.h</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\common.h</name>
             </file>
         </group>
         <group>
@@ -2234,7 +2255,7 @@
             <name>Device Silicon Revision</name>
             <tag>CMSISPack.Component</tag>
             <file>
-                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\Include\adi_si_rev.h</name>
+                <name>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\Include\adi_si_rev.h</name>
             </file>
         </group>
         <group>
@@ -2250,112 +2271,117 @@
                 <name>$PROJ_DIR$\RTE\ADuCM4x50_DFP\AnalogDevices\system_ADuCM4050.h</name>
             </file>
         </group>
-        <file>
-            <name>$PROJ_DIR$\RTE\RTE_Components.h</name>
-        </file>
     </group>
     <cmsisPackSettings>
-        <rte>&lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&gt;
-&lt;configuration xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"&gt;
-&lt;packages/&gt;
-&lt;device Dclock="52000000" Dcore="Cortex-M4" DcoreVersion="r0p1" Dendian="Little-endian" Dfamily="ADuCM4x50 Series" Dfpu="SP_FPU" Dmpu="MPU" Dname="ADuCM4050" Dvendor="Analog Devices:1" Pname=""&gt;
-&lt;url&gt;http://www.keil.com/dd2/analogdevices/aducm4050&lt;/url&gt;
-&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.3.0"/&gt;
-&lt;/device&gt;
-&lt;toolchain Tcompiler="IAR" Toutput="exe"/&gt;
-&lt;components&gt;
-&lt;component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="5.4.0"&gt;
-&lt;package name="CMSIS" url="http://www.keil.com/pack/" vendor="ARM" version="5.7.0"/&gt;
-&lt;file category="doc" name="CMSIS/Documentation/Core/html/index.html"/&gt;
-&lt;file category="include" name="CMSIS/Core/Include/"/&gt;
-&lt;file category="header" condition="TrustZone" name="CMSIS/Core/Include/tz_context.h"/&gt;
-&lt;file attr="template" category="sourceC" condition="TZ Secure" name="CMSIS/Core/Template/ARMv8-M/main_s.c" select="Secure mode 'main' module for ARMv8-M" version="1.1.1"/&gt;
-&lt;file attr="template" category="sourceC" condition="TZ Secure" name="CMSIS/Core/Template/ARMv8-M/tz_context.c" select="RTOS Context Management (TrustZone for ARMv8-M)" version="1.1.1"/&gt;
-&lt;/component&gt;
-&lt;component Cclass="Device" Cgroup="Drivers" Csub="ADC" Cvendor="AnalogDevices" Cversion="3.3.0" deviceDependent="1"&gt;
-&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.3.0"/&gt;
-&lt;file category="source" deviceDependent="1" name="Source/drivers/adc/adi_adc.c"/&gt;
-&lt;file category="header" deviceDependent="1" name="Include/drivers/adc/adi_adc.h"/&gt;
-&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_adc_config.h" version="3.3.0"/&gt;
-&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.3.0"/&gt;
-&lt;file category="doc" deviceDependent="1" name="Documents/html/group___a_d_c___driver.html"/&gt;
-&lt;/component&gt;
-&lt;component Cclass="Device" Cgroup="Drivers" Csub="DMA" Cvendor="AnalogDevices" Cversion="3.3.0" deviceDependent="1"&gt;
-&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.3.0"/&gt;
-&lt;file category="source" deviceDependent="1" name="Source/drivers/dma/adi_dma.c"/&gt;
-&lt;file category="header" deviceDependent="1" name="Include/drivers/dma/adi_dma.h"/&gt;
-&lt;file category="doc" deviceDependent="1" name="Documents/html/group___d_m_a___driver.html"/&gt;
-&lt;/component&gt;
-&lt;component Cclass="Device" Cgroup="Drivers" Csub="GPIO" Cvendor="AnalogDevices" Cversion="3.3.0" deviceDependent="1"&gt;
-&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.3.0"/&gt;
-&lt;file category="source" deviceDependent="1" name="Source/drivers/gpio/adi_gpio.c"/&gt;
-&lt;file category="header" deviceDependent="1" name="Include/drivers/gpio/adi_gpio.h"/&gt;
-&lt;file category="doc" deviceDependent="1" name="Documents/html/group___g_p_i_o___driver.html"/&gt;
-&lt;/component&gt;
-&lt;component Cclass="Device" Cgroup="Drivers" Csub="Power" Cvendor="AnalogDevices" Cversion="3.3.0" deviceDependent="1"&gt;
-&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.3.0"/&gt;
-&lt;file category="source" deviceDependent="1" name="Source/drivers/pwr/adi_pwr.c"/&gt;
-&lt;file category="header" deviceDependent="1" name="Include/drivers/pwr/adi_pwr.h"/&gt;
-&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_pwr_config.h" version="3.3.0"/&gt;
-&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.3.0"/&gt;
-&lt;file category="doc" deviceDependent="1" name="Documents/html/group___power___driver.html"/&gt;
-&lt;/component&gt;
-&lt;component Cclass="Device" Cgroup="Drivers" Csub="SPI" Cvendor="AnalogDevices" Cversion="3.3.0" deviceDependent="1"&gt;
-&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.3.0"/&gt;
-&lt;file category="source" deviceDependent="1" name="Source/drivers/spi/adi_spi.c"/&gt;
-&lt;file category="header" deviceDependent="1" name="Include/drivers/spi/adi_spi.h"/&gt;
-&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_spi_config.h" version="3.3.0"/&gt;
-&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.3.0"/&gt;
-&lt;file category="doc" deviceDependent="1" name="Documents/html/group___s_p_i___driver.html"/&gt;
-&lt;/component&gt;
-&lt;component Cclass="Device" Cgroup="Drivers" Csub="TMR" Cvendor="AnalogDevices" Cversion="3.3.0" deviceDependent="1"&gt;
-&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.3.0"/&gt;
-&lt;file category="source" deviceDependent="1" name="Source/drivers/tmr/adi_tmr.c"/&gt;
-&lt;file category="header" deviceDependent="1" name="Include/drivers/tmr/adi_tmr.h"/&gt;
-&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_tmr_config.h" version="3.3.0"/&gt;
-&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.3.0"/&gt;
-&lt;file category="doc" deviceDependent="1" name="Documents/html/group___t_m_r___driver.html"/&gt;
-&lt;/component&gt;
-&lt;component Cclass="Device" Cgroup="Drivers" Csub="UART" Cvendor="AnalogDevices" Cversion="3.3.0" deviceDependent="1"&gt;
-&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.3.0"/&gt;
-&lt;file category="source" deviceDependent="1" name="Source/drivers/uart/adi_uart.c"/&gt;
-&lt;file category="header" deviceDependent="1" name="Include/drivers/uart/adi_uart.h"/&gt;
-&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_uart_config.h" version="3.3.0"/&gt;
-&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.3.0"/&gt;
-&lt;file category="doc" deviceDependent="1" name="Documents/html/group___u_a_r_t___driver.html"/&gt;
-&lt;/component&gt;
-&lt;component Cclass="Device" Cgroup="Drivers" Csub="WDT" Cvendor="AnalogDevices" Cversion="3.3.0" deviceDependent="1"&gt;
-&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.3.0"/&gt;
-&lt;file category="source" deviceDependent="1" name="Source/drivers/wdt/adi_wdt.c"/&gt;
-&lt;file category="header" deviceDependent="1" name="Include/drivers/wdt/adi_wdt.h"/&gt;
-&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_wdt_config.h" version="3.3.0"/&gt;
-&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.3.0"/&gt;
-&lt;file category="doc" deviceDependent="1" name="Documents/html/group___w_d_t___driver.html"/&gt;
-&lt;/component&gt;
-&lt;component Cclass="Device" Cgroup="Examples Support" Cvendor="AnalogDevices" Cversion="3.3.0" deviceDependent="1"&gt;
-&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.3.0"/&gt;
-&lt;file category="source" deviceDependent="1" name="Source/common.c"/&gt;
-&lt;file category="header" deviceDependent="1" name="Include/common.h"/&gt;
-&lt;/component&gt;
-&lt;component Cclass="Device" Cgroup="Global Configuration" Cvendor="AnalogDevices" Cversion="3.3.0" deviceDependent="1"&gt;
-&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.3.0"/&gt;
-&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_cycle_counting_config.h" version="3.3.0"/&gt;
-&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.3.0"/&gt;
-&lt;/component&gt;
-&lt;component Cclass="Device" Cgroup="Silicon Revision" Cvariant="0.0" Cvendor="AnalogDevices" Cversion="3.3.0" deviceDependent="1"&gt;
-&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.3.0"/&gt;
-&lt;file category="header" deviceDependent="1" name="Include/adi_si_rev.h" version="3.3.0"/&gt;
-&lt;/component&gt;
-&lt;component Cclass="Device" Cgroup="Startup" Cvendor="AnalogDevices" Cversion="3.3.0" deviceDependent="1"&gt;
-&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.3.0"/&gt;
-&lt;file category="include" deviceDependent="1" name="Include/"/&gt;
-&lt;file attr="config" category="source" condition="ADuCM4050_IAR" deviceDependent="1" name="Source/IAR/startup_ADuCM4050.s" version="3.3.0"/&gt;
-&lt;file attr="config" category="header" condition="ADuCM4050" deviceDependent="1" name="Include/system_ADuCM4050.h" version="3.3.0"/&gt;
-&lt;file attr="config" category="source" condition="ADuCM4050" deviceDependent="1" name="Source/system_ADuCM4050.c" version="3.3.0"/&gt;
-&lt;/component&gt;
-&lt;/components&gt;
-&lt;apis/&gt;
-&lt;/configuration&gt;
+        <rte>&lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&gt;
+&lt;configuration xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"&gt;
+&lt;packages/&gt;
+&lt;device Dclock="52000000" Dcore="Cortex-M4" DcoreVersion="r0p1" Dendian="Little-endian" Dfamily="ADuCM4x50 Series" Dfpu="SP_FPU" Dmpu="MPU" Dname="ADuCM4050" Dvendor="Analog Devices:1" Pname=""&gt;
+&lt;url&gt;http://www.keil.com/dd2/analogdevices/aducm4050&lt;/url&gt;
+&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.4.0"/&gt;
+&lt;/device&gt;
+&lt;toolchain Tcompiler="IAR" Toutput="exe"/&gt;
+&lt;components&gt;
+&lt;component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="5.4.0"&gt;
+&lt;package name="CMSIS" url="http://www.keil.com/pack/" vendor="ARM" version="5.7.0"/&gt;
+&lt;file category="doc" name="CMSIS/Documentation/Core/html/index.html"/&gt;
+&lt;file category="include" name="CMSIS/Core/Include/"/&gt;
+&lt;file category="header" condition="TrustZone" name="CMSIS/Core/Include/tz_context.h"/&gt;
+&lt;file attr="template" category="sourceC" condition="TZ Secure" name="CMSIS/Core/Template/ARMv8-M/main_s.c" select="Secure mode 'main' module for ARMv8-M" version="1.1.1"/&gt;
+&lt;file attr="template" category="sourceC" condition="TZ Secure" name="CMSIS/Core/Template/ARMv8-M/tz_context.c" select="RTOS Context Management (TrustZone for ARMv8-M)" version="1.1.1"/&gt;
+&lt;/component&gt;
+&lt;component Cclass="Device" Cgroup="Drivers" Csub="ADC" Cvendor="AnalogDevices" Cversion="3.4.0" deviceDependent="1"&gt;
+&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.4.0"/&gt;
+&lt;file category="source" deviceDependent="1" name="Source/drivers/adc/adi_adc.c"/&gt;
+&lt;file category="header" deviceDependent="1" name="Include/drivers/adc/adi_adc.h"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_adc_config.h" version="3.4.0"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.4.0"/&gt;
+&lt;file category="doc" deviceDependent="1" name="Documents/html/group___a_d_c___driver.html"/&gt;
+&lt;/component&gt;
+&lt;component Cclass="Device" Cgroup="Drivers" Csub="DMA" Cvendor="AnalogDevices" Cversion="3.4.0" deviceDependent="1"&gt;
+&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.4.0"/&gt;
+&lt;file category="source" deviceDependent="1" name="Source/drivers/dma/adi_dma.c"/&gt;
+&lt;file category="header" deviceDependent="1" name="Include/drivers/dma/adi_dma.h"/&gt;
+&lt;file category="doc" deviceDependent="1" name="Documents/html/group___d_m_a___driver.html"/&gt;
+&lt;/component&gt;
+&lt;component Cclass="Device" Cgroup="Drivers" Csub="GPIO" Cvendor="AnalogDevices" Cversion="3.4.0" deviceDependent="1"&gt;
+&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.4.0"/&gt;
+&lt;file category="source" deviceDependent="1" name="Source/drivers/gpio/adi_gpio.c"/&gt;
+&lt;file category="header" deviceDependent="1" name="Include/drivers/gpio/adi_gpio.h"/&gt;
+&lt;file category="doc" deviceDependent="1" name="Documents/html/group___g_p_i_o___driver.html"/&gt;
+&lt;/component&gt;
+&lt;component Cclass="Device" Cgroup="Drivers" Csub="Power" Cvendor="AnalogDevices" Cversion="3.4.0" deviceDependent="1"&gt;
+&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.4.0"/&gt;
+&lt;file category="source" deviceDependent="1" name="Source/drivers/pwr/adi_pwr.c"/&gt;
+&lt;file category="header" deviceDependent="1" name="Include/drivers/pwr/adi_pwr.h"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_pwr_config.h" version="3.4.0"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.4.0"/&gt;
+&lt;file category="doc" deviceDependent="1" name="Documents/html/group___power___driver.html"/&gt;
+&lt;/component&gt;
+&lt;component Cclass="Device" Cgroup="Drivers" Csub="RTC" Cvendor="AnalogDevices" Cversion="3.4.0" deviceDependent="1"&gt;
+&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.4.0"/&gt;
+&lt;file category="source" deviceDependent="1" name="Source/drivers/rtc/adi_rtc.c"/&gt;
+&lt;file category="header" deviceDependent="1" name="Include/drivers/rtc/adi_rtc.h"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_rtc_config.h" version="3.4.0"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.4.0"/&gt;
+&lt;file category="doc" deviceDependent="1" name="Documents/html/group___r_t_c___driver.html"/&gt;
+&lt;/component&gt;
+&lt;component Cclass="Device" Cgroup="Drivers" Csub="SPI" Cvendor="AnalogDevices" Cversion="3.4.0" deviceDependent="1"&gt;
+&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.4.0"/&gt;
+&lt;file category="source" deviceDependent="1" name="Source/drivers/spi/adi_spi.c"/&gt;
+&lt;file category="header" deviceDependent="1" name="Include/drivers/spi/adi_spi.h"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_spi_config.h" version="3.4.0"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.4.0"/&gt;
+&lt;file category="doc" deviceDependent="1" name="Documents/html/group___s_p_i___driver.html"/&gt;
+&lt;/component&gt;
+&lt;component Cclass="Device" Cgroup="Drivers" Csub="TMR" Cvendor="AnalogDevices" Cversion="3.4.0" deviceDependent="1"&gt;
+&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.4.0"/&gt;
+&lt;file category="source" deviceDependent="1" name="Source/drivers/tmr/adi_tmr.c"/&gt;
+&lt;file category="header" deviceDependent="1" name="Include/drivers/tmr/adi_tmr.h"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_tmr_config.h" version="3.4.0"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.4.0"/&gt;
+&lt;file category="doc" deviceDependent="1" name="Documents/html/group___t_m_r___driver.html"/&gt;
+&lt;/component&gt;
+&lt;component Cclass="Device" Cgroup="Drivers" Csub="UART" Cvendor="AnalogDevices" Cversion="3.4.0" deviceDependent="1"&gt;
+&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.4.0"/&gt;
+&lt;file category="source" deviceDependent="1" name="Source/drivers/uart/adi_uart.c"/&gt;
+&lt;file category="header" deviceDependent="1" name="Include/drivers/uart/adi_uart.h"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_uart_config.h" version="3.4.0"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.4.0"/&gt;
+&lt;file category="doc" deviceDependent="1" name="Documents/html/group___u_a_r_t___driver.html"/&gt;
+&lt;/component&gt;
+&lt;component Cclass="Device" Cgroup="Drivers" Csub="WDT" Cvendor="AnalogDevices" Cversion="3.4.0" deviceDependent="1"&gt;
+&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.4.0"/&gt;
+&lt;file category="source" deviceDependent="1" name="Source/drivers/wdt/adi_wdt.c"/&gt;
+&lt;file category="header" deviceDependent="1" name="Include/drivers/wdt/adi_wdt.h"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_wdt_config.h" version="3.4.0"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.4.0"/&gt;
+&lt;file category="doc" deviceDependent="1" name="Documents/html/group___w_d_t___driver.html"/&gt;
+&lt;/component&gt;
+&lt;component Cclass="Device" Cgroup="Examples Support" Cvendor="AnalogDevices" Cversion="3.4.0" deviceDependent="1"&gt;
+&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.4.0"/&gt;
+&lt;file category="source" deviceDependent="1" name="Source/common.c"/&gt;
+&lt;file category="header" deviceDependent="1" name="Include/common.h"/&gt;
+&lt;/component&gt;
+&lt;component Cclass="Device" Cgroup="Global Configuration" Cvendor="AnalogDevices" Cversion="3.4.0" deviceDependent="1"&gt;
+&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.4.0"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_cycle_counting_config.h" version="3.4.0"/&gt;
+&lt;file attr="config" category="header" deviceDependent="1" name="Include/config/adi_global_config.h" version="3.4.0"/&gt;
+&lt;/component&gt;
+&lt;component Cclass="Device" Cgroup="Silicon Revision" Cvariant="0.0" Cvendor="AnalogDevices" Cversion="3.4.0" deviceDependent="1"&gt;
+&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.4.0"/&gt;
+&lt;file category="header" deviceDependent="1" name="Include/adi_si_rev.h" version="3.4.0"/&gt;
+&lt;/component&gt;
+&lt;component Cclass="Device" Cgroup="Startup" Cvendor="AnalogDevices" Cversion="3.4.0" deviceDependent="1"&gt;
+&lt;package name="ADuCM4x50_DFP" url="http://download.analog.com/tools/EZBoards/ADuCM4050/Releases/" vendor="AnalogDevices" version="3.4.0"/&gt;
+&lt;file category="include" deviceDependent="1" name="Include/"/&gt;
+&lt;file attr="config" category="source" condition="ADuCM4050_IAR" deviceDependent="1" name="Source/IAR/startup_ADuCM4050.s" version="3.4.0"/&gt;
+&lt;file attr="config" category="header" condition="ADuCM4050" deviceDependent="1" name="Include/system_ADuCM4050.h" version="3.4.0"/&gt;
+&lt;file attr="config" category="source" condition="ADuCM4050" deviceDependent="1" name="Source/system_ADuCM4050.c" version="3.4.0"/&gt;
+&lt;/component&gt;
+&lt;/components&gt;
+&lt;apis/&gt;
+&lt;/configuration&gt;
 </rte>
     </cmsisPackSettings>
 </project>

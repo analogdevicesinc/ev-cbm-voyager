@@ -3,8 +3,8 @@
 # *********************************************************************************
 # Copyright(c) 2018-2020 Analog Devices, Inc. All Rights Reserved.
 
-# This software is proprietary to Analog Devices, Inc. and its licensors. 
-# By using this software you agree to the terms of the associated Analog Devices 
+# This software is proprietary to Analog Devices, Inc. and its licensors.
+# By using this software you agree to the terms of the associated Analog Devices
 # License Agreement.
 # *********************************************************************************/
 
@@ -13,9 +13,11 @@ CBM 3-axis: Module to connect to a Dust Networks SmartMesh manager, create conne
 to SmartMesh motes, and plot time and fft data to a Tkinter GUI. Written using the
 dust networks SmartMesh API.
 
-@authors: Christian Aaen, Dara O'Sullivan, Tom Sharkey
-@last-modified: 29/5/2020
-@version: v1.4
+Terminal Mode (Non-GUI) and handshaking with radio added in version 1.05
+
+@authors: Christian Aaen, Dara O'Sullivan, Tom Sharkey, Jack McCarthy
+@last-modified: 23/7/2021
+@version: v1.05
 """
 
 # ============================ adjust path =====================================
@@ -59,6 +61,12 @@ from scipy.stats import kurtosis, skew
 import pandas as pd
 import sqlite3
 
+global offset_removal_method
+global T_frame_count
+global moteStartAckd
+T_frame_count = 0
+moteStartAckd = False
+
 # ============================ data ============================================
 Vcc = 3.3  # Supply Voltage
 V_perg_ref = 0.04  # V per g at reference voltage
@@ -71,17 +79,25 @@ ADC_gain = V_per_LSB / V_perg_Vcc  # Gain of ADC
 f_adc = 6.5e6  # ADC clock frequency
 n_acq = 185  # Acq. time in clock periods
 
+
+def getAdcCodeFromGravityValue(G):
+    """Input the desired gravity value toecalculate the corresponding ADC code"""
+    adc_code = G/ADC_gain+ADC_offset
+    return round(adc_code)
+
+
 LARGE_FONT = ("Verdana", 12)
 
-VERSION = 1.04
+VERSION = 1.05
 py_version = int(VERSION * 100 - int(VERSION) * 100)  # version after decimal
 ##bin_version     = bin(version).replace("0b","") # 1.02 float -> 10 binary string
 
 
 # ============================ mote function variables ============================================
 
-save_frames = 0  # Keeps of track of frames left to be saved to SQL database
+save_frames = 0  # Keeps track of frames left to be saved to SQL database
 
+FLASH_PAGE_SAMPLES = 1024  # How many samples can be fit on a page of the external flash
 
 # ==============================================================================
 # Class for handling SmartMesh manager information
@@ -97,6 +113,7 @@ class Manager:
         self.num_motes = 0
         self.connected = False
         self.net_config = None
+        self.desired_base_bw = 500  # 500ms inter-packet-delay
         self.operationalMacs = []
         self.macList = []
         self.subscriber = None
@@ -110,13 +127,17 @@ class Manager:
 
         # Default variables for sampling parameters
         self.adc_num_samples = 512
-        self.adc_param_len = 2
-        self.sampling_frequency = 510
+        self.adc_param_len = 2 
+        #self.adc_param_len = 1  # NOTE: This has been changed from 2 to 1. It is counted like a sample which is 16bits not 2*16
+        self.sampling_frequency = 512
+        self.sleep_dur = 0  # Continual streaming by default
 
         # Default mote parameters in firmware readable format
-        self.sampling_frequency_msg = "510xxxxx"
-        self.alarm = "0xxxxxxx"
-        self.axis_sel_msg = "111xxxxx"
+        self.sampling_frequency_msg = "512xxxxx"
+        self.alarm                  = "0xxxxxxx"
+        self.axis_sel_msg           = "111xxxxx"
+        self.sleep_dur_msg          = "0xxxxxxx"
+        self.adc_num_samples_msg    = "512xxxxx"
 
     def __repr__(self):
         return repr(tuple(self.mac))
@@ -125,24 +146,76 @@ class Manager:
     def connect(self, *args):
         if self.connected:
             return
-
-        str_in = comportEntry.get()  # Put user input in string variable
-        try:
-            self.connector.connect({'port': str_in})
-        except:
-            tkMessageBox.showinfo("Error", "Unsuccessful Connection Attempt: Check COM port is the correct one")
-            return
+        
+        if not TerminalMode:
+           str_in = comportEntry.get()  # Put user input in string variable
+           try:
+               self.connector.connect({'port': str_in})
+           except:
+               tkMessageBox.showinfo("Error", "Unsuccessful Connection Attempt: Check COM port is the correct one")
+               return
+        else:
+           try:
+               print("Connecting to: {}".format(T_com_port))
+               self.connector.connect({'port': T_com_port})
+           except:
+               print("Error: Unsuccessful Connection Attempt: Check COM port is the correct one. Shutting Down")
+               quit()
+               return
+   
 
         self.net_config = self.connector.dn_getNetworkConfig()  # Update network variables
+        # Change the default base_bw for all motes in a network here instead of having them 
+        # take time to request it
+        if self.net_config.baseBandwidth != self.desired_base_bw:
+            self.change_base_bw(self.desired_base_bw)
+
         print("Connected and subscribed to data notifications ")
         self.connected = True
         self._get_motes()
         self._sub_to_mote_data()
-        self._set_indicators()
-        controller.mote_plot_init()
+        if not TerminalMode:
+            self._set_indicators()
+            controller.mote_plot_init()
+        else:
+            for i in range(mgr.num_motes):
+                self.motes[tuple(mgr.operationalMacs[i])] = (Mote(mgr.adc_num_samples), (i))
+
+
+    def change_base_bw(self, base_bw):
+        print("Base BW prior to change = ", self.net_config.baseBandwidth)
+
+        rc = self.connector.dn_setNetworkConfig( 
+                                                networkId        = self.net_config.networkId        ,
+                                                apTxPower        = self.net_config.apTxPower        ,
+                                                frameProfile     = self.net_config.frameProfile     ,
+                                                maxMotes         = self.net_config.maxMotes         ,
+                                                baseBandwidth    = base_bw                          ,
+                                                downFrameMultVal = self.net_config.downFrameMultVal ,
+                                                numParents       = self.net_config.numParents       ,
+                                                ccaMode          = self.net_config.ccaMode          ,
+                                                channelList      = self.net_config.channelList      ,
+                                                autoStartNetwork = self.net_config.autoStartNetwork ,
+                                                locMode          = self.net_config.locMode          ,
+                                                bbMode           = self.net_config.bbMode           ,
+                                                bbSize           = self.net_config.bbSize           ,
+                                                isRadioTest      = self.net_config.isRadioTest      ,
+                                                bwMult           = self.net_config.bwMult           ,
+                                                oneChannel       = self.net_config.oneChannel
+                                               )
+        if rc[0] == 0:
+            print("Base BW changed successfully")
+        else:
+            print("Base BW NOT changed Successfully")
+
+        self.net_config = self.connector.dn_getNetworkConfig()  # Update network variables
+        print("Base BW after change = ", self.net_config.baseBandwidth)
+
 
     def disconnect(self, *args):
         global cv
+        global moteStartAckd
+        moteStartAckd = False
         if not self.connected:
             return
         self.connector.disconnect()
@@ -152,7 +225,9 @@ class Manager:
             cv.itemconfig(light, fill='red')
         Mote.ID = 0
         self.num_motes = 0
-        controller.disconnect()  # Called to disable plot animation
+        if not TerminalMode:
+            controller.disconnect()  # Called to disable plot animation
+
         print("Successfully Disconnected\n")
 
     def handle_notifdata(self, notifName, notifParams):
@@ -172,6 +247,7 @@ class Manager:
 
         mac = tuple(notifParams.macAddress)
         if mac not in self.motes:
+            print "MAC not recognised"
             return
         timestamp = notifParams.utcSecs + 1e-6 * notifParams.utcUsecs
         self.motes[mac][0].handle_packet((timestamp, notifParams.data))
@@ -187,6 +263,7 @@ class Manager:
             isRlbl=False,
         )
         for entry in self.motes.values():
+            print("Updating adc_num_samples to ", self.adc_num_samples)
             mote = entry[0]
             mote.update(self.adc_num_samples)
 
@@ -211,11 +288,20 @@ class Manager:
             self.macList.append(self.pretty_mac(mac))
             print(self.pretty_mac(mac))
 
+        if len(self.macList) == 0:
+            print "    No operational motes found"
+            if not TerminalMode:
+                print "Please press 'disconnect', followed by 'connect'"
+
     def calc_sampling(self, *args):
+        # This function calculates the values of the x-axes for time series and FFT
+
         n_acq = (float(f_adc) / (float(self.sampling_frequency)) - 14)
         fs = f_adc / (14 + n_acq)
         f = [(fs / self.adc_num_samples) * x for x in range(0, self.adc_num_samples / 2)]
         t = [x / fs for x in range(0, self.adc_num_samples - self.adc_param_len)]  # Sample per frequency
+        #print("------ CALC SAMPLING------")
+        #print("f_max = {}".format(f[0]))
         return (f, t)
 
     ######################## Functions to send mote commands and messages #######################
@@ -242,9 +328,14 @@ class Manager:
             for mac in self.operationalMacs:
                 self.send_to_mote(mac, message, prnt)
 
-    def send_sampling_parameters(self, sampling, axis_sel, alarm="0xxxxxxx"):
+    def send_sampling_parameters(self, alarm="0xxxxxxx"):
         '''Sends msg to motes to update parameters, by default sets alarm trigger to off'''
-        sampling_message = sampling + alarm + axis_sel
+        
+        cmd_descriptor = "22xxxxxx"  # This tells MCU that the packet contains sampling parameters
+
+        sampling_message = self.sampling_frequency_msg + self.alarm         + self.axis_sel_msg \
+                         + self.adc_num_samples_msg    + self.sleep_dur_msg + cmd_descriptor
+        
         self.send_to_all_motes(sampling_message)
         print("Sending sampling parameters with msg {}".format(sampling_message))
 
@@ -252,8 +343,14 @@ class Manager:
         '''Sends smartmesh packet to all motes with updated axis select message
         axis_sel_msg: 111 -> Send x,y,z
         axis_sel_msg: 101 -> Send x, ,z'''
-        self.axis_sel_msg = str(v1.get()) + str(v2.get()) + str(v3.get())
-        msg = self.sampling_frequency_msg + '0xxxxxxx' + self.axis_sel_msg
+        
+        if not TerminalMode:
+            self.axis_sel_msg = str(v1.get()) + str(v2.get()) + str(v3.get()) +"xxxxx"
+        else:
+            self.axis_sel_msg = T_axis_en
+
+        cmd_descriptor = '33xxxxxx'
+        msg = 'xxxxxxxx' + '0xxxxxxx' + self.axis_sel_msg + 'xxxxxxxx' + 'xxxxxxxx' + cmd_descriptor
         self.send_to_all_motes(msg)
 
     def get_user_sampling_parameters(self, *args):
@@ -264,17 +361,38 @@ class Manager:
             if not self.connected:
                 return
 
-            # Get parameters from combobox
-            self.sampling_frequency_str = frequencyCombo.get()
+            if not TerminalMode:
+                # Get parameters from combobox
+                self.sampling_frequency_str = frequencyCombo.get()
+                self.adc_num_samples_str    = adcNumSamplesCombo.get()
+                self.sleep_dur_str          = sleepDurCombo.get()
+            else:
+                self.sampling_frequency_str = T_samp_freq
+                self.adc_num_samples_str    = T_num_samples
+                self.sleep_dur_str          = T_sleep_s
+
+            # Wait until all sampling parameters have been entered before sending, otherwise strings will be null
+            # User must press "OK" button"
             self.sampling_frequency = int(self.sampling_frequency_str)
+            self.adc_num_samples    = int(self.adc_num_samples_str)
+            self.sleep_dur          = int(self.sleep_dur_str)
+
+            # Update the expected number of samples for each mote
+            for entry in self.motes.values():
+                print "Updating adc_num_samples to ", self.adc_num_samples
+                mote = entry[0]
+                mote.update(self.adc_num_samples)
 
             # Always fills arrays to 8-bit width
             # Example:
             # sampFrequency = 5000xxxx
+            self.sampling_frequency_msg = self.sampling_frequency_str + ('x' * (8 - (len(self.sampling_frequency_str))))
+            self.adc_num_samples_msg    = self.adc_num_samples_str + ('x' * (8 - (len(self.adc_num_samples_str))))
+            self.sleep_dur_msg          = self.sleep_dur_str + ('x' * (8 - (len(self.sleep_dur_str))))
 
-            sampling_frequency_msg = self.sampling_frequency_str + ('x' * (8 - (len(self.sampling_frequency_str))))
-            self.send_sampling_parameters(sampling_frequency_msg, self.axis_sel_msg, self.alarm)
-            controller.f, controller.t = self.calc_sampling()
+            self.send_sampling_parameters(self.alarm)
+            if not TerminalMode:
+                controller.f, controller.t = self.calc_sampling()
 
         except ValueError:
             traceback.print_exc()
@@ -282,7 +400,8 @@ class Manager:
 
     def alarm_triggered(self, *args):
         '''Send a message with no changes to sampling parameters, but alarm set to "1"'''
-        msg = self.sampling_frequency_msg + '1xxxxxxx' + self.axis_sel_msg
+        cmd_descriptor = '44xxxxxx'
+        msg = 'xxxxxxxx' + '1xxxxxxx' + 'xxxxxxxx' + 'xxxxxxxx' + 'xxxxxxxx' + cmd_descriptor
         self.send_to_mote(mgr.operationalMacs[self.ID], msg, False)
 
     ## IN mgr class
@@ -301,7 +420,8 @@ class Manager:
 
     def reset_alarm(self, *args):
         '''Send default msg with alarm value set to 0 to reset mote alarm LED'''
-        msg = self.sampling_frequency_msg + '0xxxxxxx' + self.axis_sel_msg  # Send a message with no changes to sampling params, but alarm set to '1'
+        cmd_descriptor = '55xxxxxx'
+        msg = 'xxxxxxxx' + '0xxxxxxx' + 'xxxxxxxx' + 'xxxxxxxx' + 'xxxxxxxx' + cmd_descriptor
         self.send_to_all_motes(msg, prnt=False)
         for entry in self.motes.values():
             mote = entry[0]
@@ -348,7 +468,7 @@ class Manager:
             self.lights.append(cv.create_oval(*co_ords, fill='green'))
 
     def get_network_info(self):
-        '''Retrives network info from manager and shows to user as tkMessageBox'''
+        '''Retrieves network info from manager and shows to user as tkMessageBox'''
 
         try:
             netConList = list(self.net_config)
@@ -378,7 +498,7 @@ class Manager:
             \n\nHelp: Provides further details on network information and application function.      \
             \n\n---------------------------Disclaimer-------------------------------                 \
             \nPlease note that the application is designed only as a proof of concept.               \
-            \nIt is by no means fully completed. Use at your own risk.                               
+            \nIt is by no means fully completed. Use at your own risk.
                                 ''')
 
     def pretty_mac(self, mac):
@@ -390,7 +510,7 @@ class Manager:
 # Class for handling mote data
 # ==============================================================================
 class Mote:
-    _packet_queue_max = 10
+    _packet_queue_max = 0
     colors = {0: 'salmon', 1: 'orchid', 2: 'lightskyblue'}  # Colors for plotting x,y,z
     ID = 0  # Incremented for each mote that is created
 
@@ -483,95 +603,155 @@ class Mote:
            @param bytes: 90 byte packet passed down from handle_packet
            @returns: None
         '''
+        global T_frame_count
+        global moteStartAckd
 
         try:
-            cur_data = self._data_order[0]
-            data_len = len(bytes) / 2
-            msb_set = bytes[1] == 255  # MSB of first word is alignment bit
 
-            if self._rx_cnt + data_len > len(cur_data):  # Restart if we get more data in a frame than expected
-                print("[{} {}] Restarting after data overflow".format(id(self), self._rx_cnt))
-                self._rx_cnt = 0
+            # 0xAA, 0xBB, 0xCC, 0xDD
+            startAck = bytes[0] == 170 and \
+                       bytes[1] == 187 and \
+                       bytes[2] == 204 and \
+                       bytes[3] == 221      
 
-            if self._rx_cnt > 0 and msb_set:  # Restart if we get an alignment bit in the middle of a frame
-                print("[{}] Restarting after partial frame".format(id(self)))
-                print("Rx_cnt {}, cur_data {}".format(self._rx_cnt, len(cur_data)))
-                self._rx_cnt = 0
+            # Below lines are used to debug mote when not connected to debugger
+            if False:
+                if bytes[0] == 10 and bytes[1] == 11:
+                    print "NEW PARAM MGR READY"
 
-            if self._rx_cnt == 0 and not msb_set:  # Align to the start of a new frame
-                print("[{}] Waiting for start of new frame".format(id(self)))
-                return  # Continue count until full frame is reached
+                if bytes[0] == 11 and bytes[1] == 12:
+                    print "ACQUIRING"
 
-            if (msb_set):
-                # Check python and firmware versions match
-                c_version = int(bytes[0] & 0x0F)
-                version_match = int(c_version) == int(py_version)
-                if not version_match:
-                    print "Version mismatch - GUI version: {}, Firmware version:{}".format(py_version, c_version)
+                if bytes[0] == 12 and bytes[1] == 13:
+                    print "GETTING DATA"
 
-            self._lock.acquire()
+                if bytes[0] == 13 and bytes[1] == 13:
+                    print "STARTING TX"
 
-            for i in range(0, len(bytes), 2):
-                cur_data[self._rx_cnt] = (bytes[i + 1] << 8) | bytes[i]  # Convert from bytes to words
-                self._rx_cnt = self._rx_cnt + 1
+                if bytes[0] == 13 and bytes[1] == 14:
+                    print "FINISHED TX"
 
-            frame_got = False  # True if we have entered the next if statement, avoids double release of lock
-            # Are we done with frame?
-            if self._rx_cnt == len(cur_data):
+                if bytes[0] == 14 and bytes[1] == 15:
+                    print "AWAKE"
 
-                print("[{}] Got complete frame @ {}".format(id(self), time.clock()))
-                self._data_order = (self._data_order[1], self._data_order[0])
-                self._data_valid = True
-                self._rx_cnt = 0
-                self._lock.release()
-                frame_got = True
+                if bytes[0] == 10 and bytes[1] == 10:
+                    print "CALCULATING FFT"
 
-                # This where we have a complete frame, update all our stats here
-                raw, fft, ax = self.latest_valid_data()
+                if bytes[0] == 11 and bytes[1] == 11:
+                    print "SAMPLES ACQUIRED"
 
-                # Choose which stat axis list to store data: x,y,z
-                axis_dict = {'x': 0,
-                             'y': 1,
-                             'z': 2}
-                if ax is not None:
-                    axis_index = axis_dict[ax]
-                    self._peaks[axis_index].append(peak(raw))
-                    self._p2ps[axis_index].append(peak_to_peak(raw))
-                    self._means[axis_index].append(rms(raw))
-                    self._sds[axis_index].append(standard_deviation(raw))
-                    self._kurts[axis_index].append(kurtosis(raw))
-                    self._skews[axis_index].append(skew(raw))
-                    self._crests[axis_index].append(crest(raw))
+            if startAck:
+                # The mote has acknowledge the start signal from the GUI    
+                print "Mote has advertised it is ready"
+                if TerminalMode:
+                    mgr.get_user_sampling_parameters()  # This will also tell Mote that Mgr is ready
+                else:
+                    #sendReadyMsg()
+                    mgr.send_sampling_parameters()
 
-                # Setting alarm stuffs
-                if (v and self.alarm_flag):
-                    self.check_alarm_flags(raw)
+                moteStartAckd = True
+            else:
+                cur_data = self._data_order[0]
+                data_len = len(bytes) / 2
+                msb_set = bytes[1] == 255  # MSB of first word is alignment bit
 
-                # Setting peak, p2p and scale values
-                for i, p in enumerate(self._peak):
-                    local_peak = max(self._peaks[i])
+                if self._rx_cnt + data_len > len(cur_data):  # Restart if we get more data in a frame than expected
+                    print("[{} {}] Restarting after data overflow. Expected {}. Rxd {}".format(id(self), self._rx_cnt, len(cur_data), self._rx_cnt + data_len))
+                    self._rx_cnt = 0
 
-                    if local_peak > p:
-                        self._peak[i] = local_peak
+                if self._rx_cnt > 0 and msb_set:  # Restart if we get an alignment bit in the middle of a frame
+                    print("[{}] Restarting after partial frame".format(id(self)))
+                    print("Rx_cnt {}, cur_data {}".format(self._rx_cnt, len(cur_data)))
+                    self._rx_cnt = 0
 
-                    if local_peak > self.scale[i]:
-                        self.scale[i] = local_peak * 1.2
+                if self._rx_cnt == 0 and not msb_set:  # Align to the start of a new frame
+                    print("[{}] Waiting for start of new frame".format(id(self)))
+                    return  # Continue count until full frame is reached
 
-                for i, p2p in enumerate(self._p2p):
-                    local_p2p = max(self._p2ps[i])
-                    if local_p2p > p2p:
-                        self._p2p[i] = local_p2p
+                if msb_set and self._rx_cnt == 0:
+                    self.frame_start_time = time.clock()
+                    # Send ready message to mote. If this stops being sent then sampling will stop
+                    #sendReadyMsg()
+                    mgr.send_sampling_parameters()
+                    print("[{}] Frame beginning @ {}".format(id(self), self.frame_start_time))
 
-                if all(self._peaks):  # Ensure we have values for all axis'
-                    save_to_file(self, self.ID, ax, raw, fft)
+                if (msb_set):
+                    # Check python and firmware versions match
+                    c_version = int(bytes[0] & 0x0F)
+                    version_match = int(c_version) == int(py_version)
+                    if not version_match:
+                        print("Version mismatch - GUI version: {}, Firmware version:{}".format(py_version, c_version))
 
-                if self.remove_offsets:
-                    self.remove_offset()
-                    if self._offset_removed.values() == [True, True, True]:
-                        self.remove_offsets = False
+                self._lock.acquire()
 
-            if not frame_got:  # Ensure threading lock not released twice
-                self._lock.release()
+                for i in range(0, len(bytes), 2):
+                    cur_data[self._rx_cnt] = (bytes[i + 1] << 8) | bytes[i]  # Convert from bytes to words
+                    self._rx_cnt = self._rx_cnt + 1
+
+                #print("Rx Count: ", self._rx_cnt)
+
+                frame_got = False  # True if we have entered the next if statement, avoids double release of lock
+                # Are we done with frame?
+                if self._rx_cnt == len(cur_data):
+
+                    T_frame_count += 1
+
+                    self.frame_end_time = time.clock()
+                    self._data_order = (self._data_order[1], self._data_order[0])
+                    self._data_valid = True
+                    self._rx_cnt = 0
+                    self._lock.release()
+                    frame_got = True
+
+                    # This where we have a complete frame, update all our stats here
+                    raw, fft, ax = self.latest_valid_data()
+
+                    print("[{}] {} axis frame complete @ {}".format(id(self), ax, self.frame_end_time))
+                    print("[{}] Time between first and last packets = {}s\n".format(id(self), self.frame_end_time - self.frame_start_time))
+
+                    # Choose which stat axis list to store data: x,y,z
+                    axis_dict = {'x': 0,
+                                 'y': 1,
+                                 'z': 2}
+                    if ax is not None:
+                        axis_index = axis_dict[ax]
+                        self._peaks[axis_index].append(peak(raw))
+                        self._p2ps[axis_index].append(peak_to_peak(raw))
+                        self._means[axis_index].append(rms(raw))
+                        self._sds[axis_index].append(standard_deviation(raw))
+                        self._kurts[axis_index].append(kurtosis(raw))
+                        self._skews[axis_index].append(skew(raw))
+                        self._crests[axis_index].append(crest(raw))
+
+                    # Setting alarm stuffs
+                    if not TerminalMode:
+                        if (v and self.alarm_flag):
+                            self.check_alarm_flags(raw)
+
+                    # Setting peak, p2p and scale values
+                    for i, p in enumerate(self._peak):
+                        local_peak = max(self._peaks[i])
+                        if local_peak > p:
+                            self._peak[i] = local_peak
+                        if local_peak > self.scale[i]: 
+                            self.scale[i] = local_peak * 1.2
+
+                    for i, p2p in enumerate(self._p2p):
+                        local_p2p = max(self._p2ps[i])
+                        if local_p2p > p2p:
+                            self._p2p[i] = local_p2p
+
+                    if all(self._peaks):  # Ensure we have values for all axis'
+                        save_to_file(self, self.ID, ax, raw, fft)
+
+                    if self.remove_offsets:
+                        self.remove_offset(method=offset_removal_method)
+                        if self._offset_removed.values() == [True, True, True]:
+                            self.remove_offsets = False
+
+
+                if not frame_got:  # Ensure threading lock not released twice
+                    self._lock.release()
         except:
             print(traceback.print_exc())
 
@@ -590,12 +770,17 @@ class Mote:
 
         @returns None
         '''
+
         self._packet_queue.append(packet)  # packet -> (time, data)
         self._packet_queue.sort(key=lambda entry: entry[0], reverse=True)  # Sort by latest timestamp
 
-        if len(self._packet_queue) > self._packet_queue_max:
+        #print "Packet"
+        if moteStartAckd:
+            if len(self._packet_queue) > self._packet_queue_max:
+                self._handle_bytes(self._packet_queue.pop()[1])  # Process and remove most recent data byte
+        else:
             self._handle_bytes(self._packet_queue.pop()[1])  # Process and remove most recent data byte
-
+    
     def latest_valid_data(self, withOffset=False):
         '''Uses threading lock to return current frame of raw, fft and axis data
 
@@ -617,8 +802,12 @@ class Mote:
 
         with self._lock:
             params = self._data_order[1][0]  # Info on axis - x,y,z
-            raw = self._data_order[1][2:mgr.adc_num_samples]
-            fft = self._data_order[1][mgr.adc_num_samples + mgr.adc_param_len:]
+            raw = self._data_order[1][mgr.adc_param_len:mgr.adc_num_samples]
+
+            if mgr.adc_num_samples <= FLASH_PAGE_SAMPLES:
+                fft = self._data_order[1][mgr.adc_num_samples + mgr.adc_param_len:]
+            else:
+                fft = [0 for x in range(mgr.adc_num_samples//2)]
 
         x_set = (int(params & 0x00F0)) == 144
         y_set = (int(params & 0x00F0)) == 160
@@ -637,10 +826,10 @@ class Mote:
         raw_avg = sum(raw)/len(raw)
         #print("{} axis: Average Raw Value = {}".format(ax, raw_avg))
         #print("{} axis: Average Raw Value - offset = {} (O={})".format(ax, raw_avg - self.offset, self.offset))
-            
+
         if withOffset:
-            #raw = [ADC_gain * (x - ADC_offset) for x in raw]
-            pass  # Just return raw codes
+            # Just return raw codes
+            pass
         else:
             raw = [(ADC_gain * (x - ADC_offset - self.offset)) for x in raw]
 
@@ -651,39 +840,71 @@ class Mote:
 
         return (raw, fft, ax)
 
-    def remove_offset(self):
-        '''Updates mote offset variables for each axis, x,y,z by calculating mean for each'''
+
+    def remove_offset(self, method=1):
+        '''Updates mote offset variables for each axis, x,y,z by calculating mean for each
+           If method==1 then it is assumed the mote is in the perfectly upright position i.e. X,Y=0, Z=1
+           If method==2 then the average values of 1 frame is taken off all subsequent frames'''
         if not self._data_valid:
             return
 
         raw_w_offset, fft, ax = self.latest_valid_data(withOffset=True)
-        #print("Removing Offset from ", ax)
 
-        if ax == 'x' and self._offset_removed[ax] == False:
-            self._x_avg0G  = sum(raw_w_offset) / len(raw_w_offset)
-            self._x_offset = self._x_avg0G - ADC_offset
-            self._offset_removed[ax] = True
-            print("Removing {} from X axis codes".format(self._x_offset))
+        if method == 1:
+            # Assumes G in X,Y=0 and G in Z=1
+            # Offset is difference between average reading and ideal code for desired G value
+            if ax == 'x' and self._offset_removed[ax]==False:
+                ideal_code = getAdcCodeFromGravityValue(0)
+                self._x_avg0G  = sum(raw_w_offset) / len(raw_w_offset)
+                self._x_offset = self._x_avg0G - ideal_code
+                print("Updating X axis offset to {}. M1".format(self._x_offset))
 
-        if ax == 'y' and self._offset_removed[ax] == False:
-            self._y_avg0G  = sum(raw_w_offset) / len(raw_w_offset)
-            self._y_offset = self._y_avg0G - ADC_offset
+            if ax == 'y' and self._offset_removed[ax]==False:
+                ideal_code = getAdcCodeFromGravityValue(0)
+                self._y_avg0G  = sum(raw_w_offset) / len(raw_w_offset)
+                self._y_offset = self._y_avg0G - ideal_code
+                print("Updating Y axis offset to {}. M1".format(self._y_offset))
+
+            if ax == 'z' and self._offset_removed[ax]==False:
+                ideal_code = getAdcCodeFromGravityValue(1)
+                self._z_avg0G  = sum(raw_w_offset) / len(raw_w_offset)
+                self._z_offset = self._z_avg0G - ideal_code
+                print("Updating Z axis offset to {}. M1".format(self._z_offset))
+            
             self._offset_removed[ax] = True
-            print("Removing {} from Y axis codes".format(self._y_offset))
-        
-        if ax == 'z' and self._offset_removed['x'] and self._offset_removed['y']:
-            # Make sure x and y have been offset before Z
-            self._z_offset = (self._x_avg0G + self._y_avg0G)/2 - ADC_offset
+
+        elif method == 2:
+            # Calculate average values of 1 frame and take them off all subsequent frames
+            if ax == 'x' and self._offset_removed[ax]==False:
+                self._x_offset = sum(raw_w_offset) / len(raw_w_offset) - ADC_offset
+                print("Updating X axis offset to {}. M1".format(self._x_offset))
+            if ax == 'y' and self._offset_removed[ax]==False:
+                self._y_offset = sum(raw_w_offset) / len(raw_w_offset) - ADC_offset
+                print("Updating Y axis offset to {}. M1".format(self._y_offset))
+            if ax == 'z' and self._offset_removed[ax]==False:
+                self._z_offset = sum(raw_w_offset) / len(raw_w_offset) - ADC_offset
+                print("Updating Z axis offset to {}. M1".format(self._z_offset))
+
             self._offset_removed[ax] = True
-            print("Removing {} from Z axis codes".format(self._z_offset))
+        else:
+            print("Incorrect argument passed to remove_offset(). Offsets not removed")
+
+
+
 
     ##############################  Functions for mote updates  #################################
     def update(self, num_samples):
         '''Takes in new num_samples and updates mote values'''
         try:
             self._data_valid = False
-            self._data1 = (mgr.adc_param_len + 3 * (num_samples / 2)) * [0]
-            self._data2 = (mgr.adc_param_len + 3 * (num_samples / 2)) * [0]
+            if num_samples <= FLASH_PAGE_SAMPLES:
+                self._data1 = (mgr.adc_param_len + 3 * (num_samples / 2)) * [0]
+                self._data2 = (mgr.adc_param_len + 3 * (num_samples / 2)) * [0]
+            else:
+                # No FFT data sent if flash is being used
+                self._data1 = (mgr.adc_param_len + 2 * (num_samples / 2)) * [0]
+                self._data2 = (mgr.adc_param_len + 2 * (num_samples / 2)) * [0]
+
             self._data_order = (self._data1, self._data2)
             self._packet_queue = []
             self._rx_cnt = 0
@@ -693,6 +914,7 @@ class Mote:
 
     def reset(self):
         '''Resets mote statistics to default'''
+
         self._peak = [0, 0, 0]
         self._p2p = [0, 0, 0]
         self.scale = [0.75, 0.75, 0.75]
@@ -704,6 +926,7 @@ class Mote:
         self._kurts = [[0], [0], [0]]
         self._skews = [[0], [0], [0]]
         self._crests = [[0], [0], [0]]
+
 
     def check_alarm_flags(self, raw):
         '''Calls alarm_triggered function if alarm value is exceeded
@@ -802,6 +1025,7 @@ class AnimationController:
                 except:
                     print("Could not rescale plots")
                     traceback.print_exc()
+
         except:
             print("Error in animate callback")
             traceback.print_exc()
@@ -825,7 +1049,7 @@ class AnimationController:
 
         if self.mode == "DFT":
             if len(self.f) == len(fft):
-                ax[0, 1].set_title('DFT X Y Z, 1 Hz/bin')
+                ax[0, 1].set_title('DFT X, Y, Z')
                 ax[2, 1].set_xlabel('Frequency [Hz]')
 
                 if mote.motor_speed and not mote.motor_drawn:  # If user has set a "healthy" motor to be plotted
@@ -1264,8 +1488,8 @@ def save_to_file(self, ID, ax, raw, fft):
     Saves number of frames of data specified by user to SQL file "motedata.db" in project directory
     Called repeatedly but only saves if save_frames has been set
 
-    @params 
-    ID - Mote ID 
+    @params
+    ID - Mote ID
     ax - Axis value (x, y, z)
     raw - Raw mote data
     fft - fft mote data
@@ -1349,9 +1573,12 @@ def save_to_file(self, ID, ax, raw, fft):
             conn.close()
 
 
-def convert_sql2excel(self):
+def convert_sql2excel(ignore=1):
     '''Takes existing SQL database and coverts two tables:
     mote and stats to Excel sheets. Saves current directory. '''
+
+    # ignore input is there as a hack because tkinter tries to pass an argument
+    # to this function after a button press
     try:
         df1 = pd.read_sql("SELECT * from mote",
                           sqlite3.connect("motedata.db"))  # Create pandas dataframe to read from SQL
@@ -1363,10 +1590,26 @@ def convert_sql2excel(self):
             writer.save()
         print("Successfully saved database to motedata.xlsx")
     except:
-        print("Failed to read SQL file - data must be saved to SQL before Excel conversion")
+        print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\
+Failed to read SQL file. The problem is one of the following:\n\
+1: Data must be saved to SQL before Excel conversion\n\
+2: motedata.xlsx is already open - close to continue\n\
+3: The process was cancelled by the user\n\
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
 
 
 # ============================ helper functions ================================ #
+
+def update_offsetsM1():
+    global offset_removal_method
+    offset_removal_method=1
+    update_offsets()
+
+def update_offsetsM2():
+    global offset_removal_method
+    offset_removal_method=2
+    update_offsets()
+
 def update_offsets():
     for entry in mgr.motes.values():
         mote = entry[0]
@@ -1407,10 +1650,16 @@ def connection_frame_init(frame):
     disButton.pack(side='left', padx=10, pady=10)
     disButton.bind("<Button-1>", mgr.disconnect)
 
-    offsetCheck = ttk.Checkbutton(frame,
-                                  text="Remove ADC offset (only perform when mote is stationary and upright (assumes G in Z-axis=1))",
-                                  command=update_offsets)
-    offsetCheck.pack(side='left', padx=10, pady=10)
+    offsetCheck2 = ttk.Checkbutton(frame,
+                                  text="Remove ADC offset (only perform when mote is stationary,\ncalculates average values of 1 frame and removes from future frames)",
+                                  command=update_offsetsM2)
+    offsetCheck2.pack(side='left', padx=10, pady=10)
+
+    offsetCheck1 = ttk.Checkbutton(frame,
+                                  text="Remove ADC offset (only perform when mote is\nstationary and upright, assumes G in Z-axis=1)",
+                                  command=update_offsetsM1)
+    offsetCheck1.pack(side='left', padx=10, pady=10)
+
 
     cv = tk.Canvas(frame, width=300, height=100)  # Indicator lights canvas setup
     cv.pack(side='left')
@@ -1440,23 +1689,47 @@ def sampling_window(root):
     '''Create and display user sampling frequency selection window'''
     global updatingLabel
     global frequencyCombo
+    global adcNumSamplesCombo
+    global sleepDurCombo
     global bitsCombo
 
     frame4 = tk.Toplevel(root)
     tk.Toplevel.wm_title(frame4, "Sampling parameters")
-    frequencyString = tk.StringVar()
-    bitsString = tk.StringVar()
+
+    frequencyString   = tk.StringVar()
+    adcNumSampsString = tk.StringVar()
+    sleepDurString    = tk.StringVar()
+    bitsString        = tk.StringVar()
 
     ttk.Label(frame4, text="Sampling Frequency (Hz) ").grid(row=0, column=0, sticky=W, padx=10, pady=5)
+    ttk.Label(frame4, text="Number of ADC Samples ").grid(row=1, column=0, sticky=W, padx=10, pady=5)
+    ttk.Label(frame4, text="Sleep Duration (s) ").grid(row=2, column=0, sticky=W, padx=10, pady=5)
 
     frequencyCombo = ttk.Combobox(frame4,
                                   textvariable=frequencyString,
-                                  values=[510, 1000, 2000, 5000, 7500, 8000,
-                                          10000],
+                                  values=[256, 512, 1024, 2048, 4096, 8192, 16384, 32768],
+                                  width=7)
+                                  #values=[250, 500, 1000, 2000, 5000, 10000, 20000],
+
+    # Number of samples needs to be a power of 2... will not be run if greater than 1024 samples collected
+    adcNumSamplesCombo = ttk.Combobox(frame4,
+                                  textvariable=adcNumSampsString,
+                                  values=[256, 512, 1024, 2048, 4096, 8192, 16384, 32768],
+                                  width=7)
+
+    sleepDurCombo = ttk.Combobox(frame4,
+                                  textvariable=sleepDurString,
+                                  values=[0, 15, 30, 60, 120, 240, 480, 960, 1920],
                                   width=7)
 
     frequencyCombo.grid(row=0, column=1, sticky=W, padx=(0, 10), pady=5)
-    frequencyCombo.bind("<<ComboboxSelected>>", mgr.get_user_sampling_parameters)
+    adcNumSamplesCombo.grid(row=1, column=1, sticky=W, padx=(0, 10), pady=5)
+    sleepDurCombo.grid(row=2, column=1, sticky=W, padx=(0, 10), pady=5)
+
+    # OK Button calls mgr.get_user_sampling_parameters
+    sampParamsOkBtn = tk.Button(frame4, text="OK", pady=5, command=mgr.get_user_sampling_parameters)
+    sampParamsOkBtn.grid(row=3, column=1, sticky=W, padx=(0, 10), pady=5)
+
 
 
 def set_axis_window(root):
@@ -1696,33 +1969,178 @@ def menu_init(menu):
     Help.add_command(label='CBM Help', command=mgr.show_help)
 
 
+def sendReadyMsg():
+    cmd_descriptor = '11xxxxxx'  # Manager Ready Signal
+    msg = 'xxxxxxxx' + '0xxxxxxx' + 'xxxxxxxx' + 'xxxxxxxx' + 'xxxxxxxx' + cmd_descriptor
+    print "Sending Ready Msg"
+    mgr.send_to_all_motes(msg)
+
 # ============================ main ============================================
-root = tk.Tk()  # Creates base Tkinter window
 
 try:
+    global TerminalMode
+    global T_com_port
+    
+    T_com_port = sys.argv[1]
+    print("\nENTERING TERMINAL MODE... if motedata.xlsx already exists, ensure that it is closed. Data will be appended to it\n")
+    TerminalMode = True
+except:
+    print("\nNo arguments passed when calling script. Initiating GUI Mode")
+    TerminalMode = False
+
+if TerminalMode:
+    try:
+        global T_num_samples
+        global T_samp_freq
+        global T_num_stages
+        global T_axis_en
+        global T_offset_removal
+
+        T_samp_freq = sys.argv[2]
+        print("Sampling Freq                                   : {} Hz".format(T_samp_freq))
+        T_num_samples = sys.argv[3]
+        print("Number of Samples in a Frame (per axis)         : {}".format(T_num_samples))
+        T_num_stages = int(sys.argv[4])
+        print("Number of Stages to perform                     : {}".format(T_num_stages))
+        T_axis_en = sys.argv[5]
+        print("Enabled axes (XYZ)                              : {}".format(T_axis_en))
+        T_sleep_s = sys.argv[6]
+        print("Sleep duration after one Stage is performed     : {} s".format(T_sleep_s))
+        T_offset_removal = int(sys.argv[7])
+
+        if T_offset_removal == 1:
+            msg = "X,Y=0, Z=1 Mode"
+        elif T_offset_removal == 1:
+            msg = "Mean Removal Mode"
+        else:
+            msg = "False"
+
+        #offset_msg = True if T_offset_removal == 1 else False
+        print("ADC Offset Removal                              : {}".format(msg))
+        if T_offset_removal:
+            print("Adding 1 to number of expected Stages since offset removal is desired.")
+            print("1st frame used to calculate offset. Subsequent frames shall have offsets removed")
+            T_num_stages += 1
+
+
+        
+        # ----- Check Inputs ----- #
+        # Find total number of expected frames and ensure axis input is correct
+        num_axes_en = 0
+        if len(T_axis_en) != 3:
+            print "!!! Axis parameter is not 3 characters long: ", T_axis_en
+            raise ValueError()
+        else:
+            for i in range(3):
+                if T_axis_en[i] == '1':
+                    num_axes_en += 1
+                elif T_axis_en[i] != '0':
+                    print "!!! Axis parameter characters can only be '0' or '1': ", T_axis_en
+                    raise ValueError()
+
+        # Check stages
+        if T_num_stages < 1:
+            print("!!! Number of Stages to perform needs to be a positive integer")
+            raise ValueError()
+        
+        T_expected_num_frames = T_num_stages * num_axes_en
+        save_frames = T_expected_num_frames
+        print("There are {} axes enabled. User defined {} frames expected in total\n".format(num_axes_en, T_expected_num_frames))
+        
+        # Check num samples
+        allowedFftNum = (32, 64, 128, 256, 512, 1024)
+        if int(T_num_samples) <= FLASH_PAGE_SAMPLES:
+            if int(T_num_samples) not in allowedFftNum:
+                print("!!! If num_samples <= 1024 the allowed amounts are only {} due to FFT calculation".format(allowedFftNum))
+                raise ValueError()
+        else:
+            if int(T_num_samples) > 1e6: 
+                print("!!! If num_samples > 1024 any integer is allowed up to 165,000,000")
+                print("There is 1/3GB reserved per axis in the off-chip flash")
+                raise ValueError()
+
+        # Check sampling frequency
+        max_samp_freq = 1e6
+        if (int(T_samp_freq) < 0) or (int(T_samp_freq) > max_samp_freq):
+            print("!!! Sampling frequency must be a positive number less than {} Hz".format(max_samp_freq))
+
+
+    except:
+        print("\n!!! Incorrect arguments passed when calling script The format for the command should be as follows:")
+        print("python CBM_app.py com<PORT_NUM> <SAMP_FREQ> <NUM_SAMPLES> <NUM_STAGES> <EN_AXES_XYZ> <SLEEP_DURATION_S> <OFFSET_REMOVAL>")
+        print("\nExample:")
+        print("python CBM_app.py com9 500 1024 2 110 120 1 0")
+        quit()
+
+
+if not TerminalMode:
+    root = tk.Tk()  # Creates base Tkinter window
+
+try:
+    
     mgr = Manager()
-    controller = AnimationController()
-    style.use('ggplot')  # Tkinter command, choose plotting style for graphs
 
-    tk.Tk.wm_title(root, "Condition Based Monitoring GUI")  # Draw the main GUI window
-    v = tk.IntVar()  # Tk int variable used with alarm setting checkboxes
-    v1 = tk.IntVar()
-    v2 = tk.IntVar()
-    v3 = tk.IntVar()
-    v.set(0)  # Initialise to no check box selected
-    var = 0  # Persistant variable updated by v, keeps alarm active when option box is closed
+    if TerminalMode:
+        T_frame_count = 0
+        numMotes      = 0
 
-    frame = tk.Frame(root)  # Connect and indicator frame
-    connection_frame_init(frame)
+        while(numMotes == 0):
+            mgr.connect()
+            numMotes = len(mgr.macList)
+            if numMotes == 0:
+                print "Waiting 5s before retrying connection attempt"
+                mgr.disconnect()
+                time.sleep(5)
 
-    nb = ttk.Notebook(root)  # Notebook for plotting mote data to canvas
+        print "Waiting for mote to indicate it is ready"
+        mgr.axis_sel_msg = T_axis_en + 'xxxxx'  # Must fill to 8 bytes
+        mgr.adc_num_samples = int(T_num_samples)
+        while not moteStartAckd:
+            # Wait for mote to say its ready
+            time.sleep(1)
 
-    menu = tk.Menu(root)  # Dropdown menu for graph options
-    menu_init(menu)
+        if T_offset_removal == 1:
+            update_offsetsM1()
+        elif T_offset_removal == 2:
+            update_offsetsM2()
+        
+        while T_frame_count < T_expected_num_frames:
+            time.sleep(1)
 
-    root.mainloop()  # Begins tkinter mainloop thread, allows the program to keep running
+        mgr.disconnect(None)  # Disconnect on program finish
+
+        # Converting SQL DB to .xlsx file
+        print "\nConverting SQL database to .xlsx file... Please wait" 
+        convert_sql2excel()
+
+    else:
+        controller = AnimationController()
+        style.use('ggplot')  # Tkinter command, choose plotting style for graphs
+
+        tk.Tk.wm_title(root, "Condition Based Monitoring GUI")  # Draw the main GUI window
+        v = tk.IntVar()  # Tk int variable used with alarm setting checkboxes
+        v1 = tk.IntVar()
+        v2 = tk.IntVar()
+        v3 = tk.IntVar()
+        v.set(0)  # Initialise to no check box selected
+        var = 0  # Persistant variable updated by v, keeps alarm active when option box is closed
+
+        frame = tk.Frame(root)  # Connect and indicator frame
+        connection_frame_init(frame)
+
+        nb = ttk.Notebook(root)  # Notebook for plotting mote data to canvas
+
+        menu = tk.Menu(root)  # Dropdown menu for graph options
+        menu_init(menu)
+
+        root.mainloop()  # Begins tkinter mainloop thread, allows the program to keep running
+
     mgr.disconnect(None)  # Disconnect on program finish
 
 except:
     traceback.print_exc()
+    mgr.disconnect(None)  # Disconnect on program finish
     print("Script ended with an error.")
+    quit()
+
+

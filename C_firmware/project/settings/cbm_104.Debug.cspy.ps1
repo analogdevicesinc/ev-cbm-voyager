@@ -23,9 +23,9 @@
 
 if ($debugfile -eq "")
 {
-& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0 EWARM FS 8.22.3\common\bin\cspybat" -f "C:\GitRepos\GitHub CBM\ev-cbm-voyager\C_firmware\project\settings\cbm_104.Debug.general.xcl" --backend -f "C:\GitRepos\GitHub CBM\ev-cbm-voyager\C_firmware\project\settings\cbm_104.Debug.driver.xcl" 
+& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0 EWARM FS 8.22.3\common\bin\cspybat" -f "C:\Users\jmccarth\OneDrive - Analog Devices, Inc\CBM\github_public\ev-cbm-voyager\C_firmware\project\settings\cbm_104.Debug.general.xcl" --backend -f "C:\Users\jmccarth\OneDrive - Analog Devices, Inc\CBM\github_public\ev-cbm-voyager\C_firmware\project\settings\cbm_104.Debug.driver.xcl" 
 }
 else
 {
-& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0 EWARM FS 8.22.3\common\bin\cspybat" -f "C:\GitRepos\GitHub CBM\ev-cbm-voyager\C_firmware\project\settings\cbm_104.Debug.general.xcl" --debug_file=$debugfile --backend -f "C:\GitRepos\GitHub CBM\ev-cbm-voyager\C_firmware\project\settings\cbm_104.Debug.driver.xcl" 
+& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0 EWARM FS 8.22.3\common\bin\cspybat" -f "C:\Users\jmccarth\OneDrive - Analog Devices, Inc\CBM\github_public\ev-cbm-voyager\C_firmware\project\settings\cbm_104.Debug.general.xcl" --debug_file=$debugfile --backend -f "C:\Users\jmccarth\OneDrive - Analog Devices, Inc\CBM\github_public\ev-cbm-voyager\C_firmware\project\settings\cbm_104.Debug.driver.xcl" 
 }

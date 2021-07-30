@@ -56,6 +56,8 @@ typedef void (*dn_uart_rxByte_cbt)(uint8_t byte);
 void dn_uart_init(dn_uart_rxByte_cbt rxByte_cb);
 void dn_uart_txByte(uint8_t byte);
 void dn_uart_txFlush();
+void dn_uart_irq_enable(void);
+void dn_uart_irq_disable(void);
 
 
 #ifdef __cplusplus

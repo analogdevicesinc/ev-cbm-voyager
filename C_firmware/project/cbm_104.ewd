@@ -44,7 +44,7 @@
                 </option>
                 <option>
                     <name>MemFile</name>
-                    <state>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\ARM\config\debugger\AnalogDevices\ADuCM4050.ddf</state>
+                    <state>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\ARM\config\debugger\AnalogDevices\ADuCM4050.ddf</state>
                 </option>
                 <option>
                     <name>RunToEnable</name>
@@ -112,7 +112,7 @@
                 </option>
                 <option>
                     <name>FlashLoadersV3</name>
-                    <state>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.3.0}$\ARM\config\flashloader\AnalogDevices\FlashADuCM4050.board</state>
+                    <state>${CMSIS_PACK_PATH_AnalogDevices#ADuCM4x50_DFP#3.4.0}$\ARM\config\flashloader\AnalogDevices\FlashADuCM4050.board</state>
                 </option>
                 <option>
                     <name>OCImagesSuppressCheck1</name>
@@ -288,7 +288,7 @@
                 <option>
                     <name>CMSISDAPResetList</name>
                     <version>1</version>
-                    <state>10</state>
+                    <state>2</state>
                 </option>
                 <option>
                     <name>CMSISDAPHWResetDuration</name>
@@ -308,7 +308,7 @@
                 </option>
                 <option>
                     <name>CMSISDAPInterfaceRadio</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CMSISDAPInterfaceCmdLine</name>
@@ -429,7 +429,7 @@
                 </option>
                 <option>
                     <name>CMSISDAPSelectedCPUBehaviour</name>
-                    <state>0</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>ICpuName</name>
@@ -504,7 +504,7 @@
                 <option>
                     <name>IjetResetList</name>
                     <version>1</version>
-                    <state>10</state>
+                    <state>4</state>
                 </option>
                 <option>
                     <name>IjetHWResetDuration</name>
@@ -532,7 +532,7 @@
                 </option>
                 <option>
                     <name>IjetInterfaceRadio</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>IjetInterfaceCmdLine</name>
@@ -678,7 +678,7 @@
                 </option>
                 <option>
                     <name>IjetSelectedCPUBehaviour</name>
-                    <state>0</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>ICpuName</name>
@@ -695,7 +695,7 @@
                 <option>
                     <name>IjetTraceSettingsList</name>
                     <version>0</version>
-                    <state>0</state>
+                    <state>2</state>
                 </option>
                 <option>
                     <name>IjetTraceSizeList</name>
@@ -745,7 +745,7 @@
                 </option>
                 <option>
                     <name>JLinkInitialSpeed</name>
-                    <state>1000</state>
+                    <state>6000</state>
                 </option>
                 <option>
                     <name>CCDoJlinkMultiTarget</name>
@@ -879,7 +879,7 @@
                 </option>
                 <option>
                     <name>CCJLinkUsbSerialNo</name>
-                    <state></state>
+                    <state>541006409</state>
                 </option>
                 <option>
                     <name>CCTcpIpAlt</name>
@@ -892,7 +892,7 @@
                 </option>
                 <option>
                     <name>CCCpuClockEdit</name>
-                    <state></state>
+                    <state>26</state>
                 </option>
                 <option>
                     <name>CCSwoClockAuto</name>
@@ -900,7 +900,7 @@
                 </option>
                 <option>
                     <name>CCSwoClockEdit</name>
-                    <state>2000</state>
+                    <state>6000</state>
                 </option>
                 <option>
                     <name>OCJLinkTraceSource</name>

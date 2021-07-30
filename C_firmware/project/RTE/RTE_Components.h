@@ -4,7 +4,7 @@
  * DO NOT MODIFY!
  *
  * Project: 'cbm_104'
- * Device: 'ADuCM4050' Pack: 'AnalogDevices::ADuCM4x50_DFP.3.3.0'
+ * Device: 'ADuCM4050' Pack: 'AnalogDevices::ADuCM4x50_DFP.3.4.0'
  */
 
 #ifndef RTE_COMPONENTS_H

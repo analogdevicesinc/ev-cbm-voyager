@@ -1,8 +1,8 @@
 /*********************************************************************************
 Copyright(c) 2018-2020 Analog Devices, Inc. All Rights Reserved.
 
-This software is proprietary to Analog Devices, Inc. and its licensors. 
-By using this software you agree to the terms of the associated Analog Devices 
+This software is proprietary to Analog Devices, Inc. and its licensors.
+By using this software you agree to the terms of the associated Analog Devices
 License Agreement.
 *********************************************************************************/
 /*!
@@ -10,7 +10,7 @@ License Agreement.
 * @brief     Main header file for scheduler.c
 *
 * @details
-*            
+*
 *
 */
 
@@ -22,20 +22,23 @@ License Agreement.
 #include <drivers/pwr/adi_pwr.h>
 #include <drivers/tmr/adi_tmr.h>
 
+extern bool timerTicked;
+
 /*=============  TYPEDEFS  =============*/
-typedef enum 
+typedef enum
 {
   RTC,
   GP_TMR,
 }sched_source;
 
-typedef struct 
+typedef struct
 {
   sched_source source;
   uint16_t tick_ms;
+
 } scheduler_t;
 
-typedef struct 
+typedef struct
 {
   sched_source source;
   uint16_t tick_us;
@@ -60,6 +63,17 @@ typedef struct
 
 extern bool check_ad7685;
 
+/*==========================  PROTOTYPES  ====================================*/
+
+void    StartScheduler(scheduler_t);
+int8_t  SetupGPTimer(uint32_t, ADI_TMR_CLOCK_SOURCE);
+int8_t  SetupSamplingTimer(uint32_t, ADI_TMR_CLOCK_SOURCE);
+void    EnableGPTimer(void);
+void    DisableGPTimer(void);
+void    EnableSamplingTimer(void);
+void    DisableSamplingTimer(void);
+void    GP0CallbackFunction(void *pCBParam, uint32_t Event, void  * pArg);
+void    SamplingTimeCallbackFunction(void *pCBParam, uint32_t Event, void  * pArg);
 /*=============  L O C A L    F U N C T I O N S  =============*/
 
 

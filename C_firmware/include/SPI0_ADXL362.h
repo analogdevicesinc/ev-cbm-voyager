@@ -32,7 +32,6 @@ License Agreement.
 /* SPI Device number */
 #define BUFFERSIZE                256u   
 #define SPI_MASTER_DEVICE_NUM     (0u) 
-//extern uint16_t adcData[ADC_DATA_LEN];
 
 /* --- command --- */
 #define XL362_REG_WRITE           0x0a

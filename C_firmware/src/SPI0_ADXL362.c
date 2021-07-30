@@ -67,7 +67,6 @@ uint8_t Config[16]={
   0x00, //SELF_TEST
 };
 uint8_t Buf[16];
-extern uint16_t adcData[ADC_DATA_LEN];
 /*=============  L O C A L    F U N C T I O N S  =============*/
 
 
