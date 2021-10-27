@@ -92,7 +92,7 @@ extern uint32_t ADC_DATA_LEN;
 
 /*16.16 representation of Vref*/
 #define VREF = (uint32_t)(3.3*65536)  
-#define VERSION 1.05
+#define VERSION 1.06
 
 /* The below arrays are sized to accomodate the following:
  *    - flash page size = 2048B

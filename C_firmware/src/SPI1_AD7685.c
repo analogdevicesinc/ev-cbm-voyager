@@ -136,8 +136,8 @@ void ad7685_SampleData_Blocking(void)
   uint8_t  axis_info;
   uint16_t block_addr;
   uint8_t  page_addr;
-  bool x_en, y_en, z_en;
-  bool load_x = 0, load_y = 0, load_z = 0;
+  bool x_en      = 0, y_en      = 0, z_en      = 0;
+  bool load_x    = 0, load_y    = 0, load_z    = 0;
   bool loading_x = 0, loading_y = 0, loading_z = 0;
   bool active_wr_buff_x = 0;
   bool active_wr_buff_y = 0;

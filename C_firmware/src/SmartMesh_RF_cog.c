@@ -100,6 +100,7 @@ extern uint8_t              rxData[DATASIZE_i2c];
 /* Python Downstream variables*/
 bool                         mgrReady = false;
 static uint16_t              cmdDescriptor;
+static uint8_t               final_stage;
 static uint32_t              samp_frequency   = 512;
 static uint16_t              extra_bits_var   = 12;
 static uint8_t               alarm            = 0;
@@ -284,6 +285,7 @@ void dn_ipmt_notif_cb(uint8_t cmdId, uint8_t subCmdId)                          
   char           numSampArray[8];
   char           sleepDurArray[8];
   char           cmdDescriptorArray[8];
+  char           finalStageArray[8];
 
   switch (cmdId)
    {
@@ -350,6 +352,7 @@ void dn_ipmt_notif_cb(uint8_t cmdId, uint8_t subCmdId)                          
               numSampArray[i]       = dn_ipmt_receive_notif->payload[i+24];
               sleepDurArray[i]      = dn_ipmt_receive_notif->payload[i+32];
               cmdDescriptorArray[i] = dn_ipmt_receive_notif->payload[i+40]; 
+              finalStageArray[i]    = dn_ipmt_receive_notif->payload[i+48]; 
             }
 
           cmdDescriptor  = (uint16_t)atol(cmdDescriptorArray);
@@ -362,15 +365,20 @@ void dn_ipmt_notif_cb(uint8_t cmdId, uint8_t subCmdId)                          
           else if (cmdDescriptor == 22)
           {
 
-             // Manager Ready Signal
-             mgrReady = true;
-
              /*Convert char arrays to long int (32) format*/
              samp_frequency  = (uint32_t)atol(sampFrequencyArray);
              axis_info       = (uint8_t)atol(axisArray);
              adcNumSamples   = (uint32_t)atol(numSampArray);
              sleep_dur_s     = (uint32_t)atol(sleepDurArray);
              alarm           = (uint8_t)atol(alarmArray);
+             final_stage     = (uint8_t)atol(finalStageArray);
+
+
+             // Manager Ready Signal
+             if (final_stage)
+                mgrReady = false;
+             else
+                mgrReady = true;
 
              DEBUG_PRINT(("adcNumSamples=%d\n", adcNumSamples));
              DEBUG_PRINT(("sleep_dur_s=%d\n", sleep_dur_s));

@@ -1,0 +1,32 @@
+
+__________________________________________________________________________________
+
+VERSION 0.6 - 27th Oct 2021
+
+- Added support for Terminal mode so that data could be collected from more than one mote (Voyager platform) in parallel.
+    - New Command: 
+      python CBM_app.py com<PORT_NUM> <SAMP_FREQ> <NUM_SAMPLES> <NUM_STAGES> <EN_AXES_XYZ> <SLEEP_DURATION_S> <OFFSET_REMOVAL> <NUM_MOTES>
+      
+      E.g.: python CBM_app.py com9 500 1024 2 110 120 1 0 1
+
+- Fixed a bug where the X axes data collection could not be disabled
+- In Terminal mode, an extra stage is no longer performed after terminal mode shuts down. Only the user programmed number of stages are performed
+- Fixed bug in GUI relating to peak-peak measurement
+
+__________________________________________________________________________________
+
+
+VERSION 0.5 - 30th July 2021
+
+- Configurable low power sleep mode after one frame of data is collected per axis to enable more realistic use cases.
+- Control the sampling frequency of the ADCs, with 1Hz resolution.
+- Control which axes Voyager collects data from, via the GUI.
+- Control the number of samples that are collected per frame.
+- Voyager’s 1GB external flash chip has been utilised. Up to 1/3GB of data per axis can be sampled continuously, at the desired sampling frequency, with no time gaps.
+    - Note, if the number of samples per frame exceeds 1024 then FFT is not calculated.
+- Additional means of removing ADC offset. Assumes the mote is in the vertical position i.e., G in X and Y axes = 0. G in Z axis = 1.
+- Terminal (non-GUI) mode.
+- Handshaking between Voyager and Manager keeps the two in sync and stops Voyager collecting data that will not be observed.
+- Fixed a scaling issue within the GUI which caused G values to be misrepresented.
+__________________________________________________________________________________
+
